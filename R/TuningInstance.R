@@ -11,7 +11,7 @@
 #' and querying the archive (`$archive()`).
 #'
 #' Evaluations of hyperparameter configurations are performed in batches by calling [mlr3::benchmark()] internally.
-#' Before and after a batch is evaluated, the [Terminator] is queried for the remaining budget.
+#' Before a batch is evaluated, the [Terminator] is queried for the remaining budget.
 #' If the available budget is exhausted, an exception is raised, and no further evaluations can be performed from this point on.
 #'
 #' A list of measures can be passed to the instance, and they will always be all evaluated.
@@ -72,7 +72,7 @@
 #'     Has the same number of rows as `dt`, and the same number of columns as length of `measures`.
 #'     Columns are named with measure-IDs. A cell entry is the (aggregated) performance of that configuration for that measure.
 #'
-#'   Before and after each batch-evaluation, the [Terminator] is checked, and if it is positive, an exception of class `terminated_error` is raised.
+#'   Before each batch-evaluation, the [Terminator] is checked, and if it is positive, an exception of class `terminated_error` is raised.
 #'   This function should be internally called by the tuner.
 #'
 #' * `tuner_objective(x)`\cr
@@ -213,15 +213,19 @@ TuningInstance = R6Class("TuningInstance",
 
     print = function() {
       catf(self$format())
+      catf(str_indent("* State: ", if(is.null(self$result$perf)) "Not tuned" else "Tuned"))
       catf(str_indent("* Task:", format(self$task)))
       catf(str_indent("* Learner:", format(self$learner)))
       catf(str_indent("* Measures:", map_chr(self$measures, "id")))
       catf(str_indent("* Resampling:", format(self$resampling)))
       catf(str_indent("* Terminator:", format(self$terminator)))
       catf(str_indent("* bm_args:", as_short_string(self$bm_args)))
+      catf(str_indent("* n_evals:", self$n_evals))
+      if(!is.null(self$result$perf)) {
+        catf(str_indent("* Result perf:", as_short_string(as.list(self$result$perf))) )
+        catf(str_indent("* Result tune_x:", as_short_string(self$result$tune_x)))
+      }
       print(self$param_set)
-      catf("Archive:")
-      print(self$archive())
     },
 
     # evaluates all points in a design
@@ -272,14 +276,11 @@ TuningInstance = R6Class("TuningInstance",
         # - i dont know how to reference the current level as "info" instead of "400" for the threshold in lgr
         # - i only want to aggregate when "info" is set and we want to remove the aggregation in eval_batch later
         a = bmr$aggregate(measures = self$measures, ids = FALSE)[, mids, with = FALSE]
-        lg$info("Result:")
+        lg$info("Result of batch %i:", batch_nr)
         lg$info(capture.output(print(cbind(dt, a), class = FALSE, row.names = FALSE, print.keys = FALSE)))
+        lg$info("%i configurations evaluated", self$n_evals)
       }
 
-      # if the terminator is positive throw condition of class "terminated_error" that we can tryCatch
-      if (self$terminator$is_terminated(self)) {
-        stop(terminated_error(self))
-      }
       perf = bmr$aggregate(measures = self$measures, ids = FALSE)[, mids, with = FALSE]
       return(list(batch_nr = batch_nr, uhashes = bmr$uhashes, perf = perf))
     },

@@ -11,7 +11,7 @@ A terminator is an object that determines when to stop the tuning.
 Termination of tuning works as follows:
 \itemize{
 \item Evaluations in a tuner are performed in batches.
-\item Before and after each batch evaluation, the \link{Terminator} is checked, and if it is positive, we stop.
+\item Before each batch evaluation, the \link{Terminator} is checked, and if it is positive, we stop.
 \item The tuning algorithm itself might decide not to produce any more points, or even might decide to do a smaller batch in its last evaluation.
 }
 
@@ -48,13 +48,13 @@ Must be implemented in each subclass.
 
 \seealso{
 Other Terminator: 
-\code{\link{TerminatorClockTime}},
-\code{\link{TerminatorCombo}},
-\code{\link{TerminatorEvals}},
-\code{\link{TerminatorModelTime}},
-\code{\link{TerminatorNone}},
-\code{\link{TerminatorPerfReached}},
-\code{\link{TerminatorStagnation}},
+\code{\link{mlr_terminators_clock_time}},
+\code{\link{mlr_terminators_combo}},
+\code{\link{mlr_terminators_evals}},
+\code{\link{mlr_terminators_model_time}},
+\code{\link{mlr_terminators_none}},
+\code{\link{mlr_terminators_perf_reached}},
+\code{\link{mlr_terminators_stagnation}},
 \code{\link{mlr_terminators}}
 }
 \concept{Terminator}
