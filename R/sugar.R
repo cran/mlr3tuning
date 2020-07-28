@@ -1,14 +1,15 @@
-#' @title Syntactic Sugar for Tuner and Terminator Construction
+#' @title Syntactic Sugar for Tuner Construction
 #'
 #' @description
-#' This function complements [mlr_tuners] and [mlr_terminators] with functions in the spirit
+#' This function complements [mlr_tuners] with functions in the spirit
 #' of [mlr3::mlr_sugar].
 #'
 #' @inheritParams mlr3::mlr_sugar
-#' @return [Tuner] for `tnr()` and [Terminator] for `term()`.
+#' @return
+#' * [Tuner] for `tnr()`
+#' * list of [Tuner] for `tnrs()`
 #' @export
 #' @examples
-#' term("evals", n_evals = 10)
 #' tnr("random_search")
 tnr = function(.key, ...) {
   dictionary_sugar(mlr_tuners, .key, ...)
@@ -16,6 +17,6 @@ tnr = function(.key, ...) {
 
 #' @rdname tnr
 #' @export
-term = function(.key, ...) {
-  dictionary_sugar(mlr_terminators, .key, ...)
+tnrs = function(.keys, ...) {
+  dictionary_sugar_mget(mlr_tuners, .keys, ...)
 }

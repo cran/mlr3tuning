@@ -4,40 +4,118 @@
 \alias{mlr_tuners_gensa}
 \alias{TunerGenSA}
 \title{TunerGenSA}
-\format{\link[R6:R6Class]{R6::R6Class} object inheriting from \link{Tuner}.}
-\description{
-Subclass for generalized simulated annealing tuning calling \code{\link[GenSA:GenSA]{GenSA::GenSA()}} from package \CRANpkg{GenSA}.
+\source{
+\cite{bbotk}{tsallis_1996}
+
+\cite{bbotk}{xiang_2013}
 }
-\section{Construction}{
-\preformatted{TunerGenSA$new()
+\description{
+Subclass for generalized simulated annealing tuning calling \code{\link[GenSA:GenSA]{GenSA::GenSA()}}
+from package \CRANpkg{GenSA}.
+}
+\section{Dictionary}{
+
+This \link{Tuner} can be instantiated via the \link[mlr3misc:Dictionary]{dictionary}
+\link{mlr_tuners} or with the associated sugar function \code{\link[=tnr]{tnr()}}:\preformatted{mlr_tuners$get("gensa")
 tnr("gensa")
 }
 }
 
-\section{Parameters}{
+\section{Logging}{
 
-\itemize{
-\item \code{smooth} :: \code{logical(1)}\cr
-\item \code{temperature} :: \code{numeric(1)}\cr
-\item \code{acceptance.param} :: \code{numeric(1)}\cr
-\item \code{verbose} :: \code{logical(1)}\cr
-\item \code{trace.mat} :: \code{logical(1)}\cr
+
+All \link{Tuner}s use a logger (as implemented in \CRANpkg{lgr}) from package
+\CRANpkg{bbotk}.
+Use \code{lgr::get_logger("bbotk")} to access and control the logger.
 }
 
-For the meaning of the control parameters, see \code{\link[GenSA:GenSA]{GenSA::GenSA()}}.
-Note that we have removed all control parameters which refer to the termination of the algorithm and
-where our terminators allow to obtain the same behavior.
+\section{Parameters}{
+
+
+\describe{
+\item{\code{smooth}}{\code{logical(1)}}
+\item{\code{temperature}}{\code{numeric(1)}}
+\item{\code{acceptance.param}}{\code{numeric(1)}}
+\item{\code{verbose}}{\code{logical(1)}}
+\item{\code{trace.mat}}{\code{logical(1)}}
+}
+
+For the meaning of the control parameters, see \code{\link[GenSA:GenSA]{GenSA::GenSA()}}. Note that we
+have removed all control parameters which refer to the termination of the
+algorithm and where our terminators allow to obtain the same behavior.
+
 }
 
 \examples{
-# see ?Tuner
+library(mlr3)
+library(paradox)
+search_space = ParamSet$new(list(
+  ParamDbl$new("cp", lower = 0.001, upper = 0.1)
+))
+terminator = trm("evals", n_evals = 3)
+instance = TuningInstanceSingleCrit$new(
+  task = tsk("iris"),
+  learner = lrn("classif.rpart"),
+  resampling = rsmp("holdout"),
+  measure = msr("classif.ce"),
+  search_space = search_space,
+  terminator = terminator
+)
+tt = tnr("gensa")
+
+# modifies the instance by reference
+tt$optimize(instance)
+
+# returns best configuration and best performance
+instance$result
+
+# allows access of data.table of full path of all evaluations
+instance$archive
 }
-\seealso{
-Other Tuner: 
-\code{\link{Tuner}},
-\code{\link{mlr_tuners_design_points}},
-\code{\link{mlr_tuners_grid_search}},
-\code{\link{mlr_tuners_random_search}},
-\code{\link{mlr_tuners}}
+\section{Super classes}{
+\code{\link[mlr3tuning:Tuner]{mlr3tuning::Tuner}} -> \code{\link[mlr3tuning:TunerFromOptimizer]{mlr3tuning::TunerFromOptimizer}} -> \code{TunerGenSA}
 }
-\concept{Tuner}
+\section{Methods}{
+\subsection{Public methods}{
+\itemize{
+\item \href{#method-new}{\code{TunerGenSA$new()}}
+\item \href{#method-clone}{\code{TunerGenSA$clone()}}
+}
+}
+\if{html}{
+\out{<details open ><summary>Inherited methods</summary>}
+\itemize{
+\item \out{<span class="pkg-link" data-pkg="mlr3tuning" data-topic="Tuner" data-id="format">}\href{../../mlr3tuning/html/Tuner.html#method-format}{\code{mlr3tuning::Tuner$format()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="mlr3tuning" data-topic="Tuner" data-id="print">}\href{../../mlr3tuning/html/Tuner.html#method-print}{\code{mlr3tuning::Tuner$print()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="mlr3tuning" data-topic="TunerFromOptimizer" data-id="optimize">}\href{../../mlr3tuning/html/TunerFromOptimizer.html#method-optimize}{\code{mlr3tuning::TunerFromOptimizer$optimize()}}\out{</span>}
+}
+\out{</details>}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
+\subsection{Method \code{new()}}{
+Creates a new instance of this \link[R6:R6Class]{R6} class.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{TunerGenSA$new()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{TunerGenSA$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
+}

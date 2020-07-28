@@ -2,29 +2,34 @@
 % Please edit documentation in R/sugar.R
 \name{tnr}
 \alias{tnr}
-\alias{term}
-\title{Syntactic Sugar for Tuner and Terminator Construction}
+\alias{tnrs}
+\title{Syntactic Sugar for Tuner Construction}
 \usage{
 tnr(.key, ...)
 
-term(.key, ...)
+tnrs(.keys, ...)
 }
 \arguments{
-\item{.key}{:: \code{character(1)}\cr
-Key passed to the respective \link[mlr3misc:Dictionary]{mlr3misc::Dictionary} to retrieve the object.}
+\item{.key}{(\code{character(1)})\cr
+Key passed to the respective \link[mlr3misc:Dictionary]{dictionary} to retrieve the object.}
 
-\item{...}{:: named \code{list()}\cr
+\item{...}{(named \code{list()})\cr
 Named arguments passed to the constructor, to be set as parameters in the \link[paradox:ParamSet]{paradox::ParamSet}, or to be set as public field.
 See \code{\link[mlr3misc:dictionary_sugar_get]{mlr3misc::dictionary_sugar_get()}} for more details.}
+
+\item{.keys}{(\code{character()})\cr
+Keys passed to the respective \link[mlr3misc:Dictionary]{dictionary} to retrieve multiple objects.}
 }
 \value{
-\link{Tuner} for \code{tnr()} and \link{Terminator} for \code{term()}.
+\itemize{
+\item \link{Tuner} for \code{tnr()}
+\item list of \link{Tuner} for \code{tnrs()}
+}
 }
 \description{
-This function complements \link{mlr_tuners} and \link{mlr_terminators} with functions in the spirit
+This function complements \link{mlr_tuners} with functions in the spirit
 of \link[mlr3:mlr_sugar]{mlr3::mlr_sugar}.
 }
 \examples{
-term("evals", n_evals = 10)
 tnr("random_search")
 }
