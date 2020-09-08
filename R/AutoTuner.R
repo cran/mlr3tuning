@@ -57,7 +57,7 @@
 #' rr$aggregate()
 #'
 #' # Retrieve inner tuning results.
-#' rr$data$learner[[1]]$tuning_result
+#' as.data.table(rr)$learner[[1]]$tuning_result
 AutoTuner = R6Class("AutoTuner",
   inherit = Learner,
   public = list(
@@ -130,7 +130,7 @@ AutoTuner = R6Class("AutoTuner",
 
   active = list(
 
-    #' @field archive [bbotk::Archive]\cr
+    #' @field archive [ArchiveTuning]\cr
     #' Archive of the [TuningInstanceSingleCrit].
     archive = function() self$tuning_instance$archive,
 

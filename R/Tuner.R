@@ -115,6 +115,8 @@ Tuner = R6Class("Tuner",
         bbotk_reflections$optimizer_properties,
         empty.ok = FALSE)
       self$packages = assert_set(packages)
+
+      check_packages_installed(self$packages, msg = sprintf("Package '%%s' required but not installed for Tuner '%s'", format(self)))
     },
 
     #' @description
@@ -137,7 +139,7 @@ Tuner = R6Class("Tuner",
     #' @description
     #' Performs the tuning on a [TuningInstanceSingleCrit] or
     #' [TuningInstanceMultiCrit] until termination.
-    #' The single evaluations will be written into the [bbotk::Archive] that resides in the
+    #' The single evaluations will be written into the [ArchiveTuning] that resides in the
     #' [TuningInstanceSingleCrit]/[TuningInstanceMultiCrit].
     #' The result will be written into the instance object.
     #'

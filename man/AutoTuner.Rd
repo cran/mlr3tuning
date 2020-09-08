@@ -60,7 +60,7 @@ rr = resample(task, at, resampling_outer, store_models = TRUE)
 rr$aggregate()
 
 # Retrieve inner tuning results.
-rr$data$learner[[1]]$tuning_result
+as.data.table(rr)$learner[[1]]$tuning_result
 }
 \section{Super class}{
 \code{\link[mlr3:Learner]{mlr3::Learner}} -> \code{AutoTuner}
@@ -83,7 +83,7 @@ If \code{TRUE} (default), stores the internally created
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{archive}}{\link[bbotk:Archive]{bbotk::Archive}\cr
+\item{\code{archive}}{\link{ArchiveTuning}\cr
 Archive of the \link{TuningInstanceSingleCrit}.}
 
 \item{\code{learner}}{(\link[mlr3:Learner]{mlr3::Learner})\cr
