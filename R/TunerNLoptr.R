@@ -22,7 +22,7 @@
 #' @inheritSection bbotk::OptimizerNLoptr Parameters
 #'
 #' @source
-#' \cite{bbotk}{johnson_2014}
+#' `r tools::toRd(bibentries["johnson_2014"])`
 #'
 #' @export
 #' @examples

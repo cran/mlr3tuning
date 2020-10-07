@@ -5,7 +5,7 @@
 #' function calls of the Objective and the associated [mlr3::BenchmarkResult].
 #'
 #' `$benchmark_result` stores a [mlr3::BenchmarkResult] which contains the
-#' [mlr3::ResampleResult] of all performaned function calls. The
+#' [mlr3::ResampleResult] of all performed function calls. The
 #' [mlr3::BenchmarkResult] is connected to the [data.table::data.table] via the
 #' `uhash` column.
 #'
@@ -17,12 +17,6 @@
 #' values can be added with the `$add_evals()` method. This however is usually
 #' done through the evaluation of the [TuningInstanceSingleCrit] or
 #' [TuningInstanceMultiCrit] by the [Tuner].
-#'
-#' @template param_codomain
-#' @template param_search_space
-#' @template param_xdt
-#' @template param_ydt
-#' @template param_check_values
 #'
 #' @export
 ArchiveTuning = R6Class("ArchiveTuning",
