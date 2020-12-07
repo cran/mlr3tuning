@@ -16,8 +16,10 @@
 #' @inheritSection bbotk::OptimizerNLoptr Parameters
 #'
 #' @source
-#' `r tools::toRd(bibentries["bergstra_2012"])`
+#' `r format_bib("bergstra_2012")`
 #'
+#' @family Tuner
+#' @seealso Package \CRANpkg{mlr3hyperband} for hyperband tuning.
 #' @export
 #' @template example
 TunerRandomSearch = R6Class("TunerRandomSearch",
