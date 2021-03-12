@@ -1,6 +1,6 @@
 Package: mlr3tuning
 Title: Tuning for 'mlr3'
-Version: 0.7.0
+Version: 0.8.0
 Authors@R: 
     c(person(given = "Marc",
              family = "Becker",
@@ -53,7 +53,7 @@ Collate: 'ArchiveTuning.R' 'AutoTuner.R' 'ObjectiveTuning.R'
         'TuningInstanceMulticrit.R' 'TuningInstanceSingleCrit.R'
         'assertions.R' 'bibentries.R' 'helper.R' 'reexport.R' 'sugar.R'
         'zzz.R'
-Packaged: 2021-02-11 07:41:11 UTC; marc
+Packaged: 2021-03-12 12:41:29 UTC; marc
 Author: Marc Becker [cre, aut] (<https://orcid.org/0000-0002-8115-0400>),
   Michel Lang [aut] (<https://orcid.org/0000-0001-9754-0393>),
   Jakob Richter [aut] (<https://orcid.org/0000-0003-4481-5554>),
@@ -61,4 +61,4 @@ Author: Marc Becker [cre, aut] (<https://orcid.org/0000-0002-8115-0400>),
   Daniel Schalk [aut] (<https://orcid.org/0000-0003-0950-1947>)
 Maintainer: Marc Becker <marcbecker@posteo.de>
 Repository: CRAN
-Date/Publication: 2021-02-11 08:10:03 UTC
+Date/Publication: 2021-03-12 13:40:03 UTC
