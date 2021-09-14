@@ -1,3 +1,16 @@
+# mlr3tuning 0.9.0
+
+- Adds `AutoTuner$base_learner()` method to extract the base learner from 
+  nested learner objects.
+- `tune()` supports multi-criteria tuning.
+- Allows empty search space.
+- Adds `TunerIrace` from `irace` package.
+- `extract_inner_tuning_archives()` helper function to extract inner tuning
+  archives.
+- Removes `ArchiveTuning$extended_archive()` method. The `mlr3::ResampleResults` are
+  joined automatically by `as.data.table.TuningArchive()` and
+  `extract_inner_tuning_archives()`.
+
 # mlr3tuning 0.8.0
 
 - Adds `tune()`, `auto_tuner()` and `tune_nested()` sugar functions.
@@ -14,13 +27,13 @@
 - `extract_inner_tuning_results()` helper function to extract inner tuning 
   results.
 
- # mlr3tuning 0.6.0
+# mlr3tuning 0.6.0
 
 - `ArchiveTuning$data` is a public field now.
 
 # mlr3tuning 0.5.0
 
-- Adds `TunerCmaes` from adagio package.
+- Adds `TunerCmaes` from `adagio` package.
 - Fix `predict_type` in `AutoTuner`.
 - Support to set `TuneToken` in `Learner$param_set` and create a search space
   from it.
