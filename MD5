@@ -1,6 +1,6 @@
-6e05c991fa469c9f9883d36d84be9ff7 *DESCRIPTION
+afc47e4eb0ae8183e10eb55de3ad46c1 *DESCRIPTION
 489dc437401f708ef2be0dcd7a2f4d7b *NAMESPACE
-32afdc628494726522c1b5215663373d *NEWS.md
+7b6366d169476cb8b16f86058e394ba1 *NEWS.md
 e89d9e31f0eb275ab1aed3351b1513c8 *R/ArchiveTuning.R
 b4d721e25067ab0b60daaee73d795762 *R/AutoTuner.R
 3fce864d0510befab75e334a0738643b *R/ObjectiveTuning.R
@@ -14,7 +14,7 @@ abd299231703d03b3e487fa3d09b0bdc *R/TunerDesignPoints.R
 cd49b8029ed99f2946c1cc50576f3146 *R/TunerNLoptr.R
 87eaf48a8a8bfaacd715c8bea6d1410e *R/TunerRandomSearch.R
 2aacab2b440e2fa33f8e3487381b25b7 *R/TuningInstanceMulticrit.R
-8273a47ec65fc3e1117cf0bff79eded9 *R/TuningInstanceSingleCrit.R
+0e0573c3f9c8b8c493b3476c7c796b58 *R/TuningInstanceSingleCrit.R
 ceaabf91e5063ca9a6cdf058d56ad634 *R/assertions.R
 6ee01b5db297ae7297d7c84007af0d1f *R/auto_tuner.R
 a04c1fd053bfa1b471711c5fe1a28933 *R/bibentries.R
@@ -24,11 +24,12 @@ a04c1fd053bfa1b471711c5fe1a28933 *R/bibentries.R
 f12d05be2cf215008fdc633b8edb9461 *R/mlr_tuners.R
 031ec2c8d087113157ffd74a23f1013d *R/reexport.R
 0629de972a157614b6922c4b6ffbd9c7 *R/sugar.R
-4d80489ec51e26a520b9468fd0662be7 *R/tune.R
+b30200e6e619357de734ac9644076615 *R/tune.R
 f536d5c2461e5cc62d2801a07e254982 *R/tune_nested.R
 92aded85f9d0a3d63a71b2492096fec4 *R/zzz.R
 bcf9c6dd0e739e8f6ca05a8dedc14bcf *README.md
-b0924696da4f78053137ff413f090835 *build/partial.rdb
+9120c991615921a3b78dffd3a3a2eeb8 *build/partial.rdb
+4d85e7e99e7461a4df48744b1151f866 *inst/WORDLIST
 c99d5e795592ed82c68123876735ae7b *inst/testthat/helper_expectations.R
 4b59db608251e4f590368e728069838b *inst/testthat/helper_misc.R
 f97a0aac4ddd02d0606dc1de37246bb5 *inst/testthat/helper_tuner.R
@@ -38,7 +39,7 @@ c301212e0521fbd3057e55bd7d4cf82d *man/AutoTuner.Rd
 a74697267c489b524c152f624d278b3e *man/Tuner.Rd
 22e286efa420252c4bfe3f6d581a177f *man/TunerFromOptimizer.Rd
 65ff0a5ea9ff0cdc3d84f1a4ed888f2a *man/TuningInstanceMultiCrit.Rd
-328a9db8f20d9500046c25be1c0c745c *man/TuningInstanceSingleCrit.Rd
+865dc8d9eab2f424c7c365989db86460 *man/TuningInstanceSingleCrit.Rd
 5338ea12a662ea8df9d30a5131374ec2 *man/auto_tuner.Rd
 8ee9e79c6e343a943698c8f5f8ff9045 *man/extract_inner_tuning_archives.Rd
 909e03e4607b3179348995cb387b8f78 *man/extract_inner_tuning_results.Rd
@@ -53,14 +54,14 @@ ff06fc024f30b26823c5ddb281fa30ac *man/mlr_tuners_irace.Rd
 fb77299a6127a7a7f3028068e2a41fd0 *man/mlr_tuners_random_search.Rd
 477103b8f8d9ece75c3597fb720473ea *man/reexports.Rd
 7fdd104c9ff76bc4e2ed5b440fa4c7a3 *man/tnr.Rd
-7da0b00a0dabddb05a56bfe966f732ec *man/tune.Rd
+f2f5d739cb610a11e855d9e484427576 *man/tune.Rd
 6f68a73cf8b2c92e7953590486187a5a *man/tune_nested.Rd
-9a31637a1d9aaa7a1910c7066c610c6c *tests/testthat.R
+be11152a21b73015f194f2d989205dd4 *tests/testthat.R
 eb8a2ece31b314cfb4890ee8d5d2bccd *tests/testthat/helper.R
-92bb64f3396ecedef6561caec77f8295 *tests/testthat/setup.R
+2e6e0578a1aec6051e24d8940d384ce6 *tests/testthat/setup.R
 0aecdc99cb5a57a76a5aaf6f81fae378 *tests/testthat/teardown.R
-e46720a2f994eee221a042960c65a792 *tests/testthat/test_ArchiveTuning.R
-117a51125510f181b880f25737166706 *tests/testthat/test_AutoTuner.R
+026494ac4976cbfd8bc51ffb1e97ac9b *tests/testthat/test_ArchiveTuning.R
+ff8dfcae209216a7d2dc34c00ad32fdc *tests/testthat/test_AutoTuner.R
 a3b382d1f25e2678d0ff63cf4a01be5b *tests/testthat/test_ObjectiveTuning.R
 37f5e2534085b2c985488b238e751264 *tests/testthat/test_Tuner.R
 ff563f74b01c3d677ad53978594f177b *tests/testthat/test_TunerCmaes.R
@@ -71,7 +72,7 @@ ff563f74b01c3d677ad53978594f177b *tests/testthat/test_TunerCmaes.R
 149b73721b8e8011d2025f7d865474e2 *tests/testthat/test_TunerNLoptr.R
 360400489ac58bd005c4cd39e2a5cc58 *tests/testthat/test_TunerRandomSearch.R
 0e7e45273310660c2e65340574d30baf *tests/testthat/test_TuningInstanceMultiCrit.R
-6f4da6362894674ba78bccf74d0aaa11 *tests/testthat/test_TuningInstanceSingleCrit.R
+cd2a4aad96dc670a795289c3a83f4bad *tests/testthat/test_TuningInstanceSingleCrit.R
 1ff21c3943a7fcbd6ea3218add082c9e *tests/testthat/test_auto_tuner.R
 ef0c608db966b7ca4589444e8f2576d0 *tests/testthat/test_error_handling.R
 15fb75d3b037bbc591f90e041ce74537 *tests/testthat/test_extract_inner_tuning_archives.R
@@ -79,5 +80,5 @@ ef0c608db966b7ca4589444e8f2576d0 *tests/testthat/test_error_handling.R
 eeb2904a136e1053efba9d01f889a46a *tests/testthat/test_hotstart.R
 f7792f208b11acc21fa6b7cfe739849e *tests/testthat/test_mlr_tuners.R
 cfe897958c2a4b52e8a04776e1931004 *tests/testthat/test_trafos.R
-e2214684d7f471dacad78792bb8f99a7 *tests/testthat/test_tune.R
+a25e1548718d4245bb3ba7f369ac8e9a *tests/testthat/test_tune.R
 b67429ac0b9442a299cf44d22d311a5d *tests/testthat/test_tune_nested.R
