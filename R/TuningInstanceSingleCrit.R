@@ -28,6 +28,7 @@
 #' @template param_store_models
 #' @template param_check_values
 #' @template param_allow_hotstart
+#' @template param_keep_hotstart_stack
 #' @template param_xdt
 #' @template param_learner_param_vals
 #'
@@ -94,15 +95,18 @@ TuningInstanceSingleCrit = R6Class("TuningInstanceSingleCrit",
     #' feasibility region for the parameters the tuner is supposed to optimize,
     #' and a termination criterion.
     initialize = function(task, learner, resampling, measure = NULL, terminator, search_space = NULL,
-      store_benchmark_result = TRUE, store_models = FALSE, check_values = FALSE, allow_hotstart = FALSE) {
+      store_benchmark_result = TRUE, store_models = FALSE, check_values = FALSE, allow_hotstart = FALSE,
+      keep_hotstart_stack = FALSE) {
       learner = assert_learner(as_learner(learner, clone = TRUE))
 
-      if (!is.null(search_space) && length(learner$param_set$get_values(type = "only_token")) > 0) {
+      if (!is.null(search_space) && length(learner$param_set$get_values(type = "only_token"))) {
         stop("If the values of the ParamSet of the Learner contain TuneTokens you cannot supply a search_space.")
       }
       if (is.null(search_space)) {
-        search_space = learner$param_set$search_space()
+        search_space = as_search_space(learner)
         learner$param_set$values = learner$param_set$get_values(type = "without_token")
+      } else {
+        search_space = as_search_space(search_space)
       }
 
       # create codomain from measure
@@ -113,7 +117,7 @@ TuningInstanceSingleCrit = R6Class("TuningInstanceSingleCrit",
       # initialized specialized tuning archive and objective
       archive = ArchiveTuning$new(search_space, codomain, check_values)
       objective = ObjectiveTuning$new(task, learner, resampling, measures, store_benchmark_result, store_models,
-        check_values, allow_hotstart, archive)
+        check_values, allow_hotstart, keep_hotstart_stack, archive)
 
       super$initialize(objective, search_space, terminator)
       # super class of instance initializes default archive, overwrite with tuning archive
