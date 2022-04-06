@@ -37,6 +37,12 @@ All \link{Tuner}s use a logger (as implemented in \CRANpkg{lgr}) from package
 Use \code{lgr::get_logger("bbotk")} to access and control the logger.
 }
 
+\section{Optimizer}{
+
+This \link{Tuner} is based on \link[bbotk:mlr_optimizers_nloptr]{bbotk::OptimizerNLoptr} which can be applied on any black box optimization problem.
+See also the documentation of \href{https://bbotk.mlr-org.com/}{bbotk}.
+}
+
 \section{Parameters}{
 
 
@@ -112,7 +118,8 @@ Other Tuner:
 \code{\link{mlr_tuners_gensa}},
 \code{\link{mlr_tuners_grid_search}},
 \code{\link{mlr_tuners_irace}},
-\code{\link{mlr_tuners_random_search}}
+\code{\link{mlr_tuners_random_search}},
+\code{\link{mlr_tuners}}
 }
 \concept{Tuner}
 \section{Super classes}{

@@ -14,6 +14,8 @@
 #'
 #' @template section_parallelization
 #' @template section_logging
+#' @templateVar optimizer bbotk::OptimizerGenSA
+#' @template section_optimizer
 #'
 #' @source
 #' `r format_bib("tsallis_1996", "xiang_2013")`
@@ -30,9 +32,9 @@ TunerGenSA = R6Class("TunerGenSA",
     #' Creates a new instance of this [R6][R6::R6Class] class.
     initialize = function() {
       super$initialize(
-        optimizer = OptimizerGenSA$new()
+        optimizer = OptimizerGenSA$new(),
+        man = "mlr3tuning::mlr_tuners_gensa"
       )
-      private$.man = "mlr3tuning::mlr_tuners_gensa"
     }
   )
 )

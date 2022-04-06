@@ -39,6 +39,8 @@
 #'
 #' @template section_progress_bars
 #' @template section_logging
+#' @templateVar optimizer bbotk::OptimizerIrace
+#' @template section_optimizer
 #'
 #' @source
 #' `r format_bib("lopez_2016")`
@@ -86,8 +88,10 @@ TunerIrace = R6Class("TunerIrace",
         debugLevel = 0,
         logFile = tempfile(fileext = ".Rdata"))
 
-      super$initialize(optimizer = optimizer)
-      private$.man = "mlr3tuning::mlr_tuners_irace"
+      super$initialize(
+        optimizer = optimizer,
+        man = "mlr3tuning::mlr_tuners_irace"
+      )
     },
 
     #' @description

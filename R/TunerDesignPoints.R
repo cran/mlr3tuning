@@ -16,6 +16,8 @@
 #'
 #' @template section_parallelization
 #' @template section_logging
+#' @templateVar optimizer bbotk::OptimizerDesignPoints
+#' @template section_optimizer
 #'
 #' @family Tuner
 #' @seealso Package \CRANpkg{mlr3hyperband} for hyperband tuning.
@@ -56,9 +58,9 @@ TunerDesignPoints = R6Class("TunerDesignPoints",
     #' Creates a new instance of this [R6][R6::R6Class] class.
     initialize = function() {
       super$initialize(
-        optimizer = OptimizerDesignPoints$new()
+        optimizer = OptimizerDesignPoints$new(),
+        man = "mlr3tuning::mlr_tuners_design_points"
       )
-      private$.man = "mlr3tuning::mlr_tuners_design_points"
     }
   )
 )
