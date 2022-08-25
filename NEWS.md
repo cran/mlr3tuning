@@ -1,3 +1,8 @@
+# mlr3tuning 0.14.0
+
+* feat: Add option `evaluate_default` to evaluate learners with hyperparameters set to their default values.
+* refactor: From now on, the default of `smooth` is `FALSE` for `TunerGenSA`.
+
 # mlr3tuning 0.13.1
 
 * feat: `Tuner` objects have the field `$id` now.
