@@ -2,76 +2,67 @@
 % Please edit documentation in R/TuningInstanceSingleCrit.R
 \name{TuningInstanceSingleCrit}
 \alias{TuningInstanceSingleCrit}
-\title{Single Criterion Tuning Instance}
+\title{Class for Single Criterion Tuning}
 \description{
-Specifies a general single-criteria tuning scenario, including objective
-function and archive for Tuners to act upon. This class stores an
-\link{ObjectiveTuning} object that encodes the black box objective function which
-a \link{Tuner} has to optimize. It allows the basic operations of querying the
-objective at design points (\verb{$eval_batch()}), storing the evaluations in the
-internal \link{ArchiveTuning} and accessing the final result (\verb{$result}).
-
-Evaluations of hyperparameter configurations are performed in batches by
-calling \code{\link[mlr3:benchmark]{mlr3::benchmark()}} internally. Before a batch is evaluated, the
-\link[bbotk:Terminator]{bbotk::Terminator} is queried for the remaining budget. If the available
-budget is exhausted, an exception is raised, and no further evaluations can
-be performed from this point on.
-
-The tuner is also supposed to store its final result, consisting of a
-selected hyperparameter configuration and associated estimated performance
-values, by calling the method \code{instance$assign_result}.
+The \link{TuningInstanceSingleCrit} specifies a tuning problem for \link[=Tuner]{Tuners}.
+The function \code{\link[=ti]{ti()}} creates a \link{TuningInstanceSingleCrit} and the function \code{\link[=tune]{tune()}} creates an instance internally.
 }
+\details{
+The instance contains an \link{ObjectiveTuning} object that encodes the black box objective function a \link{Tuner} has to optimize.
+The instance allows the basic operations of querying the objective at design points (\verb{$eval_batch()}).
+This operation is usually done by the \link{Tuner}.
+Evaluations of hyperparameter configurations are performed in batches by calling \code{\link[mlr3:benchmark]{mlr3::benchmark()}} internally.
+The evaluated hyperparameter configurations are stored in an \link[=ArchiveTuning]{Archive} (\verb{$archive}).
+Before a batch is evaluated, the \link[bbotk:Terminator]{bbotk::Terminator} is queried for the remaining budget.
+If the available budget is exhausted, an exception is raised, and no further evaluations can be performed from this point on.
+The tuner is also supposed to store its final result, consisting of a  selected hyperparameter configuration and associated estimated performance values, by calling the method \code{instance$assign_result}.
+}
+\section{Resources}{
+
+\itemize{
+\item \href{https://mlr3book.mlr-org.com/optimization.html#tuning}{book chapter} on hyperparameter optimization.
+\item \href{https://mlr3book.mlr-org.com/optimization.html#searchspace}{book chapter} on tuning spaces.
+\item \href{https://mlr-org.com/gallery/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/}{gallery post} on tuning.
+\item \href{https://mlr3tuningspaces.mlr-org.com/}{mlr3tuningspaces} extension package.
+}
+}
+
+\section{Analysis}{
+
+For analyzing the tuning results, it is recommended to pass the \link{ArchiveTuning} to \code{as.data.table()}.
+The returned data table is joined with the benchmark result which adds the \link[mlr3:ResampleResult]{mlr3::ResampleResult} for each hyperparameter evaluation.
+
+The archive provides various getters (e.g. \verb{$learners()}) to ease the access.
+All getters extract by position (\code{i}) or unique hash (\code{uhash}).
+For a complete list of all getters see the methods section.
+
+The benchmark result (\verb{$benchmark_result}) allows to score the hyperparameter configurations again on a different measure.
+Alternatively, measures can be supplied to \code{as.data.table()}.
+
+The \CRANpkg{mlr3viz} package provides visualizations for tuning results.
+}
+
 \examples{
-library(data.table)
+# get learner and define search space
+learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1, logscale = TRUE))
 
-# define search space
-search_space = ps(
-  cp = p_dbl(lower = 0.001, upper = 0.1),
-  minsplit = p_int(lower = 1, upper = 10)
-)
-
-# initialize instance
-instance = TuningInstanceSingleCrit$new(
-  task = tsk("iris"),
-  learner = lrn("classif.rpart"),
-  resampling = rsmp("holdout"),
-  measure = msr("classif.ce"),
-  search_space = search_space,
-  terminator = trm("evals", n_evals = 5)
-)
-
-# generate design
-design = data.table(cp = c(0.05, 0.01), minsplit = c(5, 3))
-
-# eval design
-instance$eval_batch(design)
-
-# show archive
-instance$archive
-
-### error handling
-
-# get a learner which breaks with 50\% probability
-# set encapsulation + fallback
-learner = lrn("classif.debug", error_train = 0.5)
-learner$encapsulate = c(train = "evaluate", predict = "evaluate")
-learner$fallback = lrn("classif.featureless")
-
-# define search space
-search_space = ps(
- x = p_dbl(lower = 0, upper = 1)
-)
-
-instance = TuningInstanceSingleCrit$new(
-  task = tsk("wine"),
+# construct tuning instance
+instance = ti(
+  task = tsk("pima"),
   learner = learner,
-  resampling = rsmp("cv", folds = 3),
-  measure = msr("classif.ce"),
-  search_space = search_space,
-  terminator = trm("evals", n_evals = 5)
+  resampling = rsmp ("holdout"),
+  measures = msr("classif.ce"),
+  terminator = trm("evals", n_evals = 4)
 )
 
-instance$eval_batch(data.table(x = 1:5 / 5))
+# get tuner
+tuner = tnr("random_search", batch_size = 2)
+
+# tune classification tree on pima data set
+tuner$optimize(instance)
+
+# get result
+instance$result
 }
 \section{Super classes}{
 \code{\link[bbotk:OptimInstance]{bbotk::OptimInstance}} -> \code{\link[bbotk:OptimInstanceSingleCrit]{bbotk::OptimInstanceSingleCrit}} -> \code{TuningInstanceSingleCrit}
@@ -108,10 +99,6 @@ Param values for the optimal learner call.}
 \if{latex}{\out{\hypertarget{method-TuningInstanceSingleCrit-new}{}}}
 \subsection{Method \code{new()}}{
 Creates a new instance of this \link[R6:R6Class]{R6} class.
-
-This defines the resampled performance of a learner on a task, a
-feasibility region for the parameters the tuner is supposed to optimize,
-and a termination criterion.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{TuningInstanceSingleCrit$new(
   task,
@@ -193,8 +180,7 @@ values at the start of the optimization.}
 \if{html}{\out{<a id="method-TuningInstanceSingleCrit-assign_result"></a>}}
 \if{latex}{\out{\hypertarget{method-TuningInstanceSingleCrit-assign_result}{}}}
 \subsection{Method \code{assign_result()}}{
-The \link{Tuner} object writes the best found point
-and estimated performance value here. For internal use.
+The \link{Tuner} object writes the best found point and estimated performance value here. For internal use.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{TuningInstanceSingleCrit$assign_result(xdt, y, learner_param_vals = NULL)}\if{html}{\out{</div>}}
 }

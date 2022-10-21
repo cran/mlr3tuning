@@ -1,22 +1,26 @@
-#' @title Single Criterion Tuning Instance
-#'
+#' @title Class for Single Criterion Tuning
+#
 #' @description
-#' Specifies a general single-criteria tuning scenario, including objective
-#' function and archive for Tuners to act upon. This class stores an
-#' [ObjectiveTuning] object that encodes the black box objective function which
-#' a [Tuner] has to optimize. It allows the basic operations of querying the
-#' objective at design points (`$eval_batch()`), storing the evaluations in the
-#' internal [ArchiveTuning] and accessing the final result (`$result`).
+#' The [TuningInstanceSingleCrit] specifies a tuning problem for [Tuners][Tuner].
+#' The function [ti()] creates a [TuningInstanceSingleCrit] and the function [tune()] creates an instance internally.
 #'
-#' Evaluations of hyperparameter configurations are performed in batches by
-#' calling [mlr3::benchmark()] internally. Before a batch is evaluated, the
-#' [bbotk::Terminator] is queried for the remaining budget. If the available
-#' budget is exhausted, an exception is raised, and no further evaluations can
-#' be performed from this point on.
+#' @details
+#' The instance contains an [ObjectiveTuning] object that encodes the black box objective function a [Tuner] has to optimize.
+#' The instance allows the basic operations of querying the objective at design points (`$eval_batch()`).
+#' This operation is usually done by the [Tuner].
+#' Evaluations of hyperparameter configurations are performed in batches by calling [mlr3::benchmark()] internally.
+#' The evaluated hyperparameter configurations are stored in an [Archive][ArchiveTuning] (`$archive`).
+#' Before a batch is evaluated, the [bbotk::Terminator] is queried for the remaining budget.
+#' If the available budget is exhausted, an exception is raised, and no further evaluations can be performed from this point on.
+#' The tuner is also supposed to store its final result, consisting of a  selected hyperparameter configuration and associated estimated performance values, by calling the method `instance$assign_result`.
 #'
-#' The tuner is also supposed to store its final result, consisting of a
-#' selected hyperparameter configuration and associated estimated performance
-#' values, by calling the method `instance$assign_result`.
+#' @inheritSection ArchiveTuning Analysis
+#'
+#' @section Resources:
+#' * [book chapter](https://mlr3book.mlr-org.com/optimization.html#tuning) on hyperparameter optimization.
+#' * [book chapter](https://mlr3book.mlr-org.com/optimization.html#searchspace) on tuning spaces.
+#' * [gallery post](https://mlr-org.com/gallery/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/) on tuning.
+#' * [mlr3tuningspaces](https://mlr3tuningspaces.mlr-org.com/) extension package.
 #'
 #' @template param_task
 #' @template param_learner
@@ -35,66 +39,32 @@
 #'
 #' @export
 #' @examples
-#' library(data.table)
+#' # get learner and define search space
+#' learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1, logscale = TRUE))
 #'
-#' # define search space
-#' search_space = ps(
-#'   cp = p_dbl(lower = 0.001, upper = 0.1),
-#'   minsplit = p_int(lower = 1, upper = 10)
-#' )
-#'
-#' # initialize instance
-#' instance = TuningInstanceSingleCrit$new(
-#'   task = tsk("iris"),
-#'   learner = lrn("classif.rpart"),
-#'   resampling = rsmp("holdout"),
-#'   measure = msr("classif.ce"),
-#'   search_space = search_space,
-#'   terminator = trm("evals", n_evals = 5)
-#' )
-#'
-#' # generate design
-#' design = data.table(cp = c(0.05, 0.01), minsplit = c(5, 3))
-#'
-#' # eval design
-#' instance$eval_batch(design)
-#'
-#' # show archive
-#' instance$archive
-#'
-#' ### error handling
-#'
-#' # get a learner which breaks with 50% probability
-#' # set encapsulation + fallback
-#' learner = lrn("classif.debug", error_train = 0.5)
-#' learner$encapsulate = c(train = "evaluate", predict = "evaluate")
-#' learner$fallback = lrn("classif.featureless")
-#'
-#' # define search space
-#' search_space = ps(
-#'  x = p_dbl(lower = 0, upper = 1)
-#' )
-#'
-#' instance = TuningInstanceSingleCrit$new(
-#'   task = tsk("wine"),
+#' # construct tuning instance
+#' instance = ti(
+#'   task = tsk("pima"),
 #'   learner = learner,
-#'   resampling = rsmp("cv", folds = 3),
-#'   measure = msr("classif.ce"),
-#'   search_space = search_space,
-#'   terminator = trm("evals", n_evals = 5)
+#'   resampling = rsmp ("holdout"),
+#'   measures = msr("classif.ce"),
+#'   terminator = trm("evals", n_evals = 4)
 #' )
 #'
-#' instance$eval_batch(data.table(x = 1:5 / 5))
+#' # get tuner
+#' tuner = tnr("random_search", batch_size = 2)
+#'
+#' # tune classification tree on pima data set
+#' tuner$optimize(instance)
+#'
+#' # get result
+#' instance$result
 TuningInstanceSingleCrit = R6Class("TuningInstanceSingleCrit",
   inherit = OptimInstanceSingleCrit,
   public = list(
 
     #' @description
     #' Creates a new instance of this [R6][R6::R6Class] class.
-    #'
-    #' This defines the resampled performance of a learner on a task, a
-    #' feasibility region for the parameters the tuner is supposed to optimize,
-    #' and a termination criterion.
     initialize = function(task, learner, resampling, measure = NULL, terminator, search_space = NULL, store_benchmark_result = TRUE, store_models = FALSE, check_values = FALSE, allow_hotstart = FALSE, keep_hotstart_stack = FALSE, evaluate_default = FALSE) {
       private$.evaluate_default = assert_flag(evaluate_default)
       learner = assert_learner(as_learner(learner, clone = TRUE))
@@ -123,8 +93,7 @@ TuningInstanceSingleCrit = R6Class("TuningInstanceSingleCrit",
     },
 
     #' @description
-    #' The [Tuner] object writes the best found point
-    #' and estimated performance value here. For internal use.
+    #' The [Tuner] object writes the best found point and estimated performance value here. For internal use.
     #'
     #' @param y (`numeric(1)`)\cr
     #'   Optimal outcome.

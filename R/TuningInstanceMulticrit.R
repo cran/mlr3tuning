@@ -1,22 +1,13 @@
-#' @title Multi Criteria Tuning Instance
+#' @title Class for Multi Criteria Tuning
+#'
+#' @include TuningInstanceSingleCrit.R
 #'
 #' @description
-#' Specifies a general multi-criteria tuning scenario, including objective
-#' function and archive for Tuners to act upon. This class stores an
-#' `ObjectiveTuning` object that encodes the black box objective function which
-#' a [Tuner] has to optimize. It allows the basic operations of querying the
-#' objective at design points (`$eval_batch()`), storing the evaluations in the
-#' internal `Archive` and accessing the final result (`$result`).
+#' The [TuningInstanceMultiCrit] specifies a tuning problem for [Tuners][Tuner].
+#' The function [ti()] creates a [TuningInstanceMultiCrit] and the function [tune()] creates an instance internally.
 #'
-#' Evaluations of hyperparameter configurations are performed in batches by
-#' calling [mlr3::benchmark()] internally. Before a batch is evaluated, the
-#' [bbotk::Terminator] is queried for the remaining budget. If the available
-#' budget is exhausted, an exception is raised, and no further evaluations can
-#' be performed from this point on.
-#'
-#' The tuner is also supposed to store its final result, consisting of a
-#' selected hyperparameter configuration and associated estimated performance
-#' values, by calling the method `instance$assign_result`.
+#' @inherit TuningInstanceSingleCrit details
+#' @inheritSection TuningInstanceSingleCrit Resources
 #'
 #' @template param_task
 #' @template param_learner
@@ -35,42 +26,32 @@
 #'
 #' @export
 #' @examples
-#' library(data.table)
+#' # get learner and define search space
+#' learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1, logscale = TRUE))
 #'
-#' # define search space
-#' search_space = ps(
-#'   cp = p_dbl(lower = 0.001, upper = 0.1),
-#'   minsplit = p_int(lower = 1, upper = 10)
+#' # construct tuning instance
+#' instance = ti(
+#'   task = tsk("pima"),
+#'   learner = learner,
+#'   resampling = rsmp ("holdout"),
+#'   measures = msrs(c("classif.ce", "time_train")),
+#'   terminator = trm("evals", n_evals = 4)
 #' )
 #'
-#' # initialize instance
-#' instance = TuningInstanceMultiCrit$new(
-#'   task = tsk("iris"),
-#'   learner = lrn("classif.rpart"),
-#'   resampling = rsmp("holdout"),
-#'   measure = msrs(c("classif.ce", "classif.acc")),
-#'   search_space = search_space,
-#'   terminator = trm("evals", n_evals = 5)
-#' )
+#' # get tuner
+#' tuner = tnr("random_search", batch_size = 2)
 #'
-#' # generate design
-#' design = data.table(cp = c(0.05, 0.01), minsplit = c(5, 3))
+#' # tune classification tree on pima data set
+#' tuner$optimize(instance)
 #'
-#' # eval design
-#' instance$eval_batch(design)
-#'
-#' # show archive
-#' instance$archive
+#' # get result
+#' instance$result
 TuningInstanceMultiCrit = R6Class("TuningInstanceMultiCrit",
   inherit = OptimInstanceMultiCrit,
   public = list(
 
     #' @description
     #' Creates a new instance of this [R6][R6::R6Class] class.
-    #'
-    #' This defines the resampled performance of a learner on a task, a
-    #' feasibility region for the parameters the tuner is supposed to optimize,
-    #' and a termination criterion.
     initialize = function(task, learner, resampling, measures, terminator, search_space = NULL, store_benchmark_result = TRUE, store_models = FALSE, check_values = FALSE, allow_hotstart = FALSE, keep_hotstart_stack = FALSE, evaluate_default = FALSE) {
       private$.evaluate_default = assert_flag(evaluate_default)
       learner = assert_learner(as_learner(learner, clone = TRUE))
@@ -99,8 +80,8 @@ TuningInstanceMultiCrit = R6Class("TuningInstanceMultiCrit",
     },
 
     #' @description
-    #' The [Tuner] object writes the best found points
-    #' and estimated performance values here. For internal use.
+    #' The [Tuner] object writes the best found points and estimated performance values here.
+    #' For internal use.
     #'
     #' @param ydt (`data.table::data.table()`)\cr
     #'   Optimal outcomes, e.g. the Pareto front.

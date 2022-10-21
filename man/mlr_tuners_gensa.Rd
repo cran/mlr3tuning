@@ -16,11 +16,11 @@ Xiang Y, Gubian S, Suomela B, Hoeng J (2013).
 \doi{10.32614/rj-2013-002}.
 }
 \description{
-Subclass for generalized simulated annealing tuning calling \code{\link[GenSA:GenSA]{GenSA::GenSA()}}
-from package \CRANpkg{GenSA}.
-
-In contrast to the \code{\link[GenSA:GenSA]{GenSA::GenSA()}} defaults, we set \code{smooth = FALSE} as a
-default.
+Subclass for generalized simulated annealing tuning.
+Calls \code{\link[GenSA:GenSA]{GenSA::GenSA()}} from package \CRANpkg{GenSA}.
+}
+\details{
+In contrast to the \code{\link[GenSA:GenSA]{GenSA::GenSA()}} defaults, we set \code{smooth = FALSE} as a default.
 }
 \section{Dictionary}{
 
@@ -73,6 +73,11 @@ See also the documentation of \href{https://bbotk.mlr-org.com/}{bbotk}.
 For the meaning of the control parameters, see \code{\link[GenSA:GenSA]{GenSA::GenSA()}}. Note that we
 have removed all control parameters which refer to the termination of the
 algorithm and where our terminators allow to obtain the same behavior.
+
+In contrast to the \code{\link[GenSA:GenSA]{GenSA::GenSA()}} defaults, we set \code{trace.mat = FALSE}.
+Note that \code{\link[GenSA:GenSA]{GenSA::GenSA()}} uses \code{smooth = TRUE} as a default.
+In the case of using this optimizer for Hyperparameter Optimization you may
+want to set \code{smooth = FALSE}.
 
 }
 
