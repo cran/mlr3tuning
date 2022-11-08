@@ -22,7 +22,7 @@ The tuner is also supposed to store its final result, consisting of a  selected 
 \itemize{
 \item \href{https://mlr3book.mlr-org.com/optimization.html#tuning}{book chapter} on hyperparameter optimization.
 \item \href{https://mlr3book.mlr-org.com/optimization.html#searchspace}{book chapter} on tuning spaces.
-\item \href{https://mlr-org.com/gallery/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/}{gallery post} on tuning.
+\item \href{https://mlr-org.com/gallery/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/practical-tuning-series-tune-a-support-vector-machine.html}{gallery post} on tuning.
 \item \href{https://mlr3tuningspaces.mlr-org.com/}{mlr3tuningspaces} extension package.
 }
 }
@@ -97,7 +97,8 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
   check_values = FALSE,
   allow_hotstart = FALSE,
   keep_hotstart_stack = FALSE,
-  evaluate_default = FALSE
+  evaluate_default = FALSE,
+  callbacks = list()
 )}\if{html}{\out{</div>}}
 }
 
@@ -157,6 +158,9 @@ after tuning.}
 \item{\code{evaluate_default}}{(\code{logical(1)})\cr
 If \code{TRUE}, learner is evaluated with hyperparameters set to their default
 values at the start of the optimization.}
+
+\item{\code{callbacks}}{(list of \link{CallbackTuning})\cr
+List of callbacks.}
 }
 \if{html}{\out{</div>}}
 }

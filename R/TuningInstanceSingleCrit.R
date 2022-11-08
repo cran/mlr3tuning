@@ -19,7 +19,7 @@
 #' @section Resources:
 #' * [book chapter](https://mlr3book.mlr-org.com/optimization.html#tuning) on hyperparameter optimization.
 #' * [book chapter](https://mlr3book.mlr-org.com/optimization.html#searchspace) on tuning spaces.
-#' * [gallery post](https://mlr-org.com/gallery/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/) on tuning.
+#' * [gallery post](https://mlr-org.com/gallery/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/practical-tuning-series-tune-a-support-vector-machine.html) on tuning.
 #' * [mlr3tuningspaces](https://mlr3tuningspaces.mlr-org.com/) extension package.
 #'
 #' @template param_task
@@ -34,6 +34,7 @@
 #' @template param_allow_hotstart
 #' @template param_keep_hotstart_stack
 #' @template param_evaluate_default
+#' @template param_callbacks
 #' @template param_xdt
 #' @template param_learner_param_vals
 #'
@@ -65,7 +66,7 @@ TuningInstanceSingleCrit = R6Class("TuningInstanceSingleCrit",
 
     #' @description
     #' Creates a new instance of this [R6][R6::R6Class] class.
-    initialize = function(task, learner, resampling, measure = NULL, terminator, search_space = NULL, store_benchmark_result = TRUE, store_models = FALSE, check_values = FALSE, allow_hotstart = FALSE, keep_hotstart_stack = FALSE, evaluate_default = FALSE) {
+    initialize = function(task, learner, resampling, measure = NULL, terminator, search_space = NULL, store_benchmark_result = TRUE, store_models = FALSE, check_values = FALSE, allow_hotstart = FALSE, keep_hotstart_stack = FALSE, evaluate_default = FALSE, callbacks = list()) {
       private$.evaluate_default = assert_flag(evaluate_default)
       learner = assert_learner(as_learner(learner, clone = TRUE))
 
@@ -85,9 +86,9 @@ TuningInstanceSingleCrit = R6Class("TuningInstanceSingleCrit",
 
       # initialized specialized tuning archive and objective
       archive = ArchiveTuning$new(search_space, codomain, check_values)
-      objective = ObjectiveTuning$new(task, learner, resampling, measures, store_benchmark_result, store_models, check_values, allow_hotstart, keep_hotstart_stack, archive)
+      objective = ObjectiveTuning$new(task, learner, resampling, measures, store_benchmark_result, store_models, check_values, allow_hotstart, keep_hotstart_stack, archive, callbacks)
 
-      super$initialize(objective, search_space, terminator)
+      super$initialize(objective, search_space, terminator, callbacks = callbacks)
       # super class of instance initializes default archive, overwrite with tuning archive
       self$archive = archive
     },

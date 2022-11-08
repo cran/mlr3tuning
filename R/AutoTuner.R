@@ -20,7 +20,7 @@
 #' @section Resources:
 #' * [book chapter](https://mlr3book.mlr-org.com/optimization.html#autotuner) on automatic tuning.
 #' * [book chapter](https://mlr3book.mlr-org.com/optimization.html#nested-resampling) on nested resampling.
-#' * [gallery post](https://mlr-org.com/gallery/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/) on tuning and nested resampling.
+#' * [gallery post](https://mlr-org.com/gallery/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/practical-tuning-series-tune-a-support-vector-machine.html) on tuning and nested resampling.
 #'
 #' @section Nested Resampling:
 #' Nested resampling can be performed by passing an [AutoTuner] object to [mlr3::resample()] or [mlr3::benchmark()].
@@ -37,6 +37,7 @@
 #' @template param_store_benchmark_result
 #' @template param_store_models
 #' @template param_check_values
+#' @template param_callbacks
 #'
 #' @export
 #' @examples
@@ -81,8 +82,6 @@
 #'   measure = msr("classif.ce"),
 #'   term_evals = 4)
 #'
-#' at$train(task)
-#'
 #' resampling_outer = rsmp("cv", folds = 3)
 #' rr = resample(task, at, resampling_outer, store_models = TRUE)
 #'
@@ -110,7 +109,7 @@ AutoTuner = R6Class("AutoTuner",
     #'
     #' @param tuner ([Tuner])\cr
     #'   Tuning algorithm to run.
-    initialize = function(learner, resampling, measure = NULL, terminator, tuner, search_space = NULL, store_tuning_instance = TRUE, store_benchmark_result = TRUE, store_models = FALSE, check_values = FALSE) {
+    initialize = function(learner, resampling, measure = NULL, terminator, tuner, search_space = NULL, store_tuning_instance = TRUE, store_benchmark_result = TRUE, store_models = FALSE, check_values = FALSE, callbacks = list()) {
       learner = assert_learner(as_learner(learner, clone = TRUE))
 
       if (!is.null(search_space) && length(learner$param_set$get_values(type = "only_token")) > 0) {
@@ -127,6 +126,7 @@ AutoTuner = R6Class("AutoTuner",
       private$.store_tuning_instance = assert_flag(store_tuning_instance)
       ia$store_benchmark_result = assert_flag(store_benchmark_result)
       ia$store_models = assert_flag(store_models)
+      ia$callbacks = assert_callbacks(as_callbacks(callbacks))
 
       if (!private$.store_tuning_instance && ia$store_benchmark_result) {
         stop("Benchmark results can only be stored if store_tuning_instance is set to TRUE")

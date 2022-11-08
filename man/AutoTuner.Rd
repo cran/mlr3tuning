@@ -26,7 +26,7 @@ A set timeout is disabled while fitting the final model.
 \itemize{
 \item \href{https://mlr3book.mlr-org.com/optimization.html#autotuner}{book chapter} on automatic tuning.
 \item \href{https://mlr3book.mlr-org.com/optimization.html#nested-resampling}{book chapter} on nested resampling.
-\item \href{https://mlr-org.com/gallery/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/}{gallery post} on tuning and nested resampling.
+\item \href{https://mlr-org.com/gallery/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/practical-tuning-series-tune-a-support-vector-machine.html}{gallery post} on tuning and nested resampling.
 }
 }
 
@@ -79,8 +79,6 @@ at = auto_tuner(
   resampling = rsmp ("holdout"),
   measure = msr("classif.ce"),
   term_evals = 4)
-
-at$train(task)
 
 resampling_outer = rsmp("cv", folds = 3)
 rr = resample(task, at, resampling_outer, store_models = TRUE)
@@ -168,7 +166,8 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
   store_tuning_instance = TRUE,
   store_benchmark_result = TRUE,
   store_models = FALSE,
-  check_values = FALSE
+  check_values = FALSE,
+  callbacks = list()
 )}\if{html}{\out{</div>}}
 }
 
@@ -220,6 +219,9 @@ combination is needed for measures that require a model.}
 If \code{TRUE}, hyperparameter values are checked before evaluation and
 performance scores after. If \code{FALSE} (default), values are unchecked but
 computational overhead is reduced.}
+
+\item{\code{callbacks}}{(list of \link{CallbackTuning})\cr
+List of callbacks.}
 }
 \if{html}{\out{</div>}}
 }
