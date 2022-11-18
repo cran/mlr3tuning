@@ -18,9 +18,9 @@
 #' A set timeout is disabled while fitting the final model.
 #'
 #' @section Resources:
-#' * [book chapter](https://mlr3book.mlr-org.com/optimization.html#autotuner) on automatic tuning.
-#' * [book chapter](https://mlr3book.mlr-org.com/optimization.html#nested-resampling) on nested resampling.
-#' * [gallery post](https://mlr-org.com/gallery/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/practical-tuning-series-tune-a-support-vector-machine.html) on tuning and nested resampling.
+#' * [book chapter](https://mlr3book.mlr-org.com/optimization.html#sec-autotuner) on automatic tuning.
+#' * [book chapter](https://mlr3book.mlr-org.com/optimization.html#sec-nested-resampling) on nested resampling.
+#' * [gallery post](https://mlr-org.com/gallery/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/) on tuning and nested resampling.
 #'
 #' @section Nested Resampling:
 #' Nested resampling can be performed by passing an [AutoTuner] object to [mlr3::resample()] or [mlr3::benchmark()].
@@ -43,22 +43,28 @@
 #' @examples
 #' # Automatic Tuning
 #'
-#' task = tsk("pima")
-#' train_set = sample(task$nrow, 0.8 * task$nrow)
-#' test_set = setdiff(seq_len(task$nrow), train_set)
+#' # split to train and external set
+#' task = tsk("penguins")
+#' split = partition(task, ratio = 0.8)
 #'
+#' # load learner and set search space
+#' learner = lrn("classif.rpart",
+#'   cp = to_tune(1e-04, 1e-1, logscale = TRUE)
+#' )
+#'
+#' # create auto tuner
 #' at = auto_tuner(
 #'   method = tnr("random_search"),
-#'   learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1, logscale = TRUE)),
+#'   learner = learner,
 #'   resampling = rsmp ("holdout"),
 #'   measure = msr("classif.ce"),
 #'   term_evals = 4)
 #'
 #' # tune hyperparameters and fit final model
-#' at$train(task, row_ids = train_set)
+#' at$train(task, row_ids = split$train)
 #'
 #' # predict with final model
-#' at$predict(task, row_ids = test_set)
+#' at$predict(task, row_ids = split$test)
 #'
 #' # show tuning result
 #' at$tuning_result
@@ -77,7 +83,7 @@
 #'
 #' at = auto_tuner(
 #'   method = tnr("random_search"),
-#'   learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1, logscale = TRUE)),
+#'   learner = learner,
 #'   resampling = rsmp ("holdout"),
 #'   measure = msr("classif.ce"),
 #'   term_evals = 4)
@@ -101,14 +107,15 @@ AutoTuner = R6Class("AutoTuner",
     #' All arguments from construction to create the [TuningInstanceSingleCrit].
     instance_args = NULL,
 
-    #' @field tuner ([Tuner]).
+    #' @field tuner ([Tuner])\cr
+    #' Optimization algorithm.
     tuner = NULL,
 
     #' @description
     #' Creates a new instance of this [R6][R6::R6Class] class.
     #'
     #' @param tuner ([Tuner])\cr
-    #'   Tuning algorithm to run.
+    #'   Optimization algorithm.
     initialize = function(learner, resampling, measure = NULL, terminator, tuner, search_space = NULL, store_tuning_instance = TRUE, store_benchmark_result = TRUE, store_models = FALSE, check_values = FALSE, callbacks = list()) {
       learner = assert_learner(as_learner(learner, clone = TRUE))
 
@@ -123,16 +130,12 @@ AutoTuner = R6Class("AutoTuner",
       if (!is.null(search_space)) ia$search_space = assert_param_set(as_search_space(search_space))$clone()
       ia$terminator = assert_terminator(terminator)$clone()
 
-      private$.store_tuning_instance = assert_flag(store_tuning_instance)
-      ia$store_benchmark_result = assert_flag(store_benchmark_result)
       ia$store_models = assert_flag(store_models)
-      ia$callbacks = assert_callbacks(as_callbacks(callbacks))
-
-      if (!private$.store_tuning_instance && ia$store_benchmark_result) {
-        stop("Benchmark results can only be stored if store_tuning_instance is set to TRUE")
-      }
+      ia$store_benchmark_result = assert_flag(store_benchmark_result) || ia$store_models
+      private$.store_tuning_instance = assert_flag(store_tuning_instance) || ia$store_benchmark_result
 
       ia$check_values = assert_flag(check_values)
+      ia$callbacks = assert_callbacks(as_callbacks(callbacks))
       self$instance_args = ia
       self$tuner = assert_tuner(tuner)$clone()
 
@@ -150,9 +153,8 @@ AutoTuner = R6Class("AutoTuner",
     },
 
     #' @description
-    #' Extracts the base learner from nested learner objects like
-    #' `GraphLearner` in \CRANpkg{mlr3pipelines}. If `recursive = 0`, the (tuned)
-    #' learner is returned.
+    #' Extracts the base learner from nested learner objects like `GraphLearner` in \CRANpkg{mlr3pipelines}.
+    #' If `recursive = 0`, the (tuned) learner is returned.
     #'
     #' @param recursive (`integer(1)`)\cr
     #'   Depth of recursion for multiple nested objects.
@@ -160,6 +162,66 @@ AutoTuner = R6Class("AutoTuner",
     #' @return [Learner].
     base_learner = function(recursive = Inf) {
       if (recursive == 0L) self$learner else self$learner$base_learner(recursive - 1L)
+    },
+
+    #' @description
+    #' The importance scores of the final model.
+    #'
+    #' @return Named `numeric()`.
+    importance = function() {
+      if ("importance" %nin% self$instance_args$learner$properties) {
+        stopf("Learner ''%s' cannot calculate important scores.", self$instance_args$learner$id)
+      }
+      if (is.null(self$model$learner$model)) {
+        self$instance_args$learner$importance()
+      } else {
+        self$model$learner$importance()
+      }
+    },
+
+    #' @description
+    #' The selected features of the final model.
+    #'
+    #' @return `character()`.
+    selected_features = function() {
+      if ("selected_features" %nin% self$instance_args$learner$properties) {
+        stopf("Learner ''%s' cannot select features.", self$instance_args$learner$id)
+      }
+      if (is.null(self$model$learner$model)) {
+        self$instance_args$learner$selected_features()
+      } else {
+        self$model$learner$selected_features()
+      }
+    },
+
+    #' @description
+    #' The out-of-bag error of the final model.
+    #'
+    #' @return `numeric(1)`.
+    oob_error = function() {
+      if ("oob_error" %nin% self$instance_args$learner$properties) {
+        stopf("Learner '%s' cannot calculate the out-of-bag error.", self$instance_args$learner$id)
+      }
+      if (is.null(self$model$learner$model)) {
+        self$instance_args$learner$oob_error()
+      } else {
+        self$model$learner$oob_error()
+      }
+    },
+
+    #' @description
+    #' The log-likelihood of the final model.
+    #'
+    #' @return `logLik`.
+    loglik = function() {
+      if ("loglik" %nin% self$instance_args$learner$properties) {
+        stopf("Learner '%s' cannot calculate the log-likelihood.", self$instance_args$learner$id)
+      }
+      if (is.null(self$model$learner$model)) {
+        self$instance_args$learner$loglik()
+      } else {
+        self$model$learner$loglik()
+      }
     },
 
     #' Printer.
@@ -199,7 +261,7 @@ AutoTuner = R6Class("AutoTuner",
     #' Trained learner
     learner = function() {
       # if there is no trained learner, we return the one in instance args
-      if (is.null(self$model)) {
+      if (is.null(self$model$learner$model)) {
         self$instance_args$learner
       } else {
         self$model$learner
@@ -260,13 +322,9 @@ AutoTuner = R6Class("AutoTuner",
       learner$train(task)
 
       # the return model is a list of "learner" and "tuning_instance"
-      result_model = list()
-      result_model$learner = learner
-
-      if (isTRUE(private$.store_tuning_instance)) {
-        result_model$tuning_instance = instance
-      }
-      return(result_model)
+      result_model = list(learner = learner)
+      if (private$.store_tuning_instance) result_model$tuning_instance = instance
+      result_model
     },
 
     .predict = function(task) {

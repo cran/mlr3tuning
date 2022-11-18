@@ -24,9 +24,9 @@ A set timeout is disabled while fitting the final model.
 \section{Resources}{
 
 \itemize{
-\item \href{https://mlr3book.mlr-org.com/optimization.html#autotuner}{book chapter} on automatic tuning.
-\item \href{https://mlr3book.mlr-org.com/optimization.html#nested-resampling}{book chapter} on nested resampling.
-\item \href{https://mlr-org.com/gallery/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/practical-tuning-series-tune-a-support-vector-machine.html}{gallery post} on tuning and nested resampling.
+\item \href{https://mlr3book.mlr-org.com/optimization.html#sec-autotuner}{book chapter} on automatic tuning.
+\item \href{https://mlr3book.mlr-org.com/optimization.html#sec-nested-resampling}{book chapter} on nested resampling.
+\item \href{https://mlr-org.com/gallery/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/}{gallery post} on tuning and nested resampling.
 }
 }
 
@@ -41,22 +41,28 @@ For this reason it is not feasible to pass an instantiated \link[mlr3:Resampling
 \examples{
 # Automatic Tuning
 
-task = tsk("pima")
-train_set = sample(task$nrow, 0.8 * task$nrow)
-test_set = setdiff(seq_len(task$nrow), train_set)
+# split to train and external set
+task = tsk("penguins")
+split = partition(task, ratio = 0.8)
 
+# load learner and set search space
+learner = lrn("classif.rpart",
+  cp = to_tune(1e-04, 1e-1, logscale = TRUE)
+)
+
+# create auto tuner
 at = auto_tuner(
   method = tnr("random_search"),
-  learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1, logscale = TRUE)),
+  learner = learner,
   resampling = rsmp ("holdout"),
   measure = msr("classif.ce"),
   term_evals = 4)
 
 # tune hyperparameters and fit final model
-at$train(task, row_ids = train_set)
+at$train(task, row_ids = split$train)
 
 # predict with final model
-at$predict(task, row_ids = test_set)
+at$predict(task, row_ids = split$test)
 
 # show tuning result
 at$tuning_result
@@ -75,7 +81,7 @@ at$tuning_instance
 
 at = auto_tuner(
   method = tnr("random_search"),
-  learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1, logscale = TRUE)),
+  learner = learner,
   resampling = rsmp ("holdout"),
   measure = msr("classif.ce"),
   term_evals = 4)
@@ -101,7 +107,8 @@ rr$aggregate()
 \item{\code{instance_args}}{(\code{list()})\cr
 All arguments from construction to create the \link{TuningInstanceSingleCrit}.}
 
-\item{\code{tuner}}{(\link{Tuner}).}
+\item{\code{tuner}}{(\link{Tuner})\cr
+Optimization algorithm.}
 }
 \if{html}{\out{</div>}}
 }
@@ -134,6 +141,10 @@ Hash (unique identifier) for this object.}
 \itemize{
 \item \href{#method-AutoTuner-new}{\code{AutoTuner$new()}}
 \item \href{#method-AutoTuner-base_learner}{\code{AutoTuner$base_learner()}}
+\item \href{#method-AutoTuner-importance}{\code{AutoTuner$importance()}}
+\item \href{#method-AutoTuner-selected_features}{\code{AutoTuner$selected_features()}}
+\item \href{#method-AutoTuner-oob_error}{\code{AutoTuner$oob_error()}}
+\item \href{#method-AutoTuner-loglik}{\code{AutoTuner$loglik()}}
 \item \href{#method-AutoTuner-print}{\code{AutoTuner$print()}}
 \item \href{#method-AutoTuner-clone}{\code{AutoTuner$clone()}}
 }
@@ -193,7 +204,7 @@ Measure to optimize. If \code{NULL}, default measure is used.}
 Stop criterion of the tuning process.}
 
 \item{\code{tuner}}{(\link{Tuner})\cr
-Tuning algorithm to run.}
+Optimization algorithm.}
 
 \item{\code{search_space}}{(\link[paradox:ParamSet]{paradox::ParamSet})\cr
 Hyperparameter search space. If \code{NULL} (default), the search space is
@@ -201,9 +212,7 @@ constructed from the \link{TuneToken} of the learner's parameter set
 (learner$param_set).}
 
 \item{\code{store_tuning_instance}}{(\code{logical(1)})\cr
-If \code{TRUE} (default), stores the internally created
-\link{TuningInstanceSingleCrit} with all intermediate results in slot
-\verb{$tuning_instance}.}
+If \code{TRUE} (default), stores the internally created \link{TuningInstanceSingleCrit} with all intermediate results in slot \verb{$tuning_instance}.}
 
 \item{\code{store_benchmark_result}}{(\code{logical(1)})\cr
 If \code{TRUE} (default), store resample result of evaluated hyperparameter
@@ -230,9 +239,8 @@ List of callbacks.}
 \if{html}{\out{<a id="method-AutoTuner-base_learner"></a>}}
 \if{latex}{\out{\hypertarget{method-AutoTuner-base_learner}{}}}
 \subsection{Method \code{base_learner()}}{
-Extracts the base learner from nested learner objects like
-\code{GraphLearner} in \CRANpkg{mlr3pipelines}. If \code{recursive = 0}, the (tuned)
-learner is returned.
+Extracts the base learner from nested learner objects like \code{GraphLearner} in \CRANpkg{mlr3pipelines}.
+If \code{recursive = 0}, the (tuned) learner is returned.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AutoTuner$base_learner(recursive = Inf)}\if{html}{\out{</div>}}
 }
@@ -247,6 +255,58 @@ Depth of recursion for multiple nested objects.}
 }
 \subsection{Returns}{
 \link{Learner}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AutoTuner-importance"></a>}}
+\if{latex}{\out{\hypertarget{method-AutoTuner-importance}{}}}
+\subsection{Method \code{importance()}}{
+The importance scores of the final model.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AutoTuner$importance()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Named \code{numeric()}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AutoTuner-selected_features"></a>}}
+\if{latex}{\out{\hypertarget{method-AutoTuner-selected_features}{}}}
+\subsection{Method \code{selected_features()}}{
+The selected features of the final model.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AutoTuner$selected_features()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+\code{character()}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AutoTuner-oob_error"></a>}}
+\if{latex}{\out{\hypertarget{method-AutoTuner-oob_error}{}}}
+\subsection{Method \code{oob_error()}}{
+The out-of-bag error of the final model.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AutoTuner$oob_error()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+\code{numeric(1)}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AutoTuner-loglik"></a>}}
+\if{latex}{\out{\hypertarget{method-AutoTuner-loglik}{}}}
+\subsection{Method \code{loglik()}}{
+The log-likelihood of the final model.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AutoTuner$loglik()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+\code{logLik}.
 Printer.
 }
 }
