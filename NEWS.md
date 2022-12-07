@@ -1,3 +1,7 @@
+# mlr3tuning 0.17.1
+
+* fix: The `ti()` function did not accept callbacks.
+
 # mlr3tuning 0.17.0
 
 * feat: The methods `$importance()`, `$selected_features()`, `$oob_error()` and `$loglik()` are forwarded from the final model to the `AutoTuner` now.
