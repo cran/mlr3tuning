@@ -1,3 +1,9 @@
+# mlr3tuning 0.17.2
+
+* feat: `AutoTuner` accepts instantiated resamplings now.
+  The `AutoTuner` checks if all row ids of the inner resampling are present in the outer resampling train set when nested resampling is performed.
+* fix: Standalone `Tuner` did not create a `ContextOptimization`.
+
 # mlr3tuning 0.17.1
 
 * fix: The `ti()` function did not accept callbacks.

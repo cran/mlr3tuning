@@ -84,7 +84,8 @@ Tuner = R6Class("Tuner",
     #' Helper for print outputs.
     #'
     #' @return (`character()`).
-    format = function() {
+    #' @param ... (ignored).
+    format = function(...) {
       sprintf("<%s>", class(self)[1L])
     },
 
@@ -116,13 +117,16 @@ Tuner = R6Class("Tuner",
     #' @return [data.table::data.table()]
     optimize = function(inst) {
       assert_multi_class(inst, c("TuningInstanceSingleCrit", "TuningInstanceMultiCrit"))
+      inst$.__enclos_env__$private$.context = ContextOptimization$new(instance = inst, optimizer = self)
+      call_back("on_optimization_begin", inst$callbacks, get_private(inst)$.context)
 
       # evaluate learner with default hyperparameter values
       if (get_private(inst)$.evaluate_default) evaluate_default(inst)
 
-      res = optimize_default(inst, self, private)
+      result = optimize_default(inst, self, private)
+      call_back("on_optimization_end", inst$callbacks, get_private(inst)$.context)
       if (!inst$objective$keep_hotstart_stack) inst$objective$hotstart_stack = NULL
-      res
+      result
     }
   ),
 
