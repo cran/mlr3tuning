@@ -23,11 +23,13 @@ A set timeout is disabled while fitting the final model.
 }
 \section{Resources}{
 
+There are several sections about hyperparameter optimization in the \href{https://mlr3book.mlr-org.com}{mlr3book}.
 \itemize{
-\item \href{https://mlr3book.mlr-org.com/optimization.html#sec-autotuner}{book chapter} on automatic tuning.
-\item \href{https://mlr3book.mlr-org.com/optimization.html#sec-nested-resampling}{book chapter} on nested resampling.
-\item \href{https://mlr-org.com/gallery/series/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/}{gallery post} on tuning and nested resampling.
+\item \href{https://mlr3book.mlr-org.com/optimization.html#sec-autotuner}{Automate} the tuning.
+\item Estimate the model performance with \href{https://mlr3book.mlr-org.com/optimization.html#sec-model-performance}{nested resampling}.
 }
+
+The \href{https://mlr-org.com/gallery-all-optimization.html}{gallery} features a collection of case studies and demos about optimization.
 }
 
 \section{Nested Resampling}{
@@ -37,6 +39,21 @@ To access the inner resampling results, set \code{store_tuning_instance = TRUE} 
 The \link[mlr3:Resampling]{mlr3::Resampling} passed to the \link{AutoTuner} is meant to be the inner resampling, operating on the training set of an arbitrary outer resampling.
 For this reason, the inner resampling should be not instantiated.
 If an instantiated resampling is passed, the \link{AutoTuner} fails when a row id of the inner resampling is not present in the training set of the outer resampling.
+}
+
+\section{Default Measures}{
+
+If no measure is passed, the default measure is used.
+The default measure depends on the task type.\tabular{lll}{
+   Task \tab Default Measure \tab Package \cr
+   \code{"classif"} \tab \code{"classif.ce"} \tab \CRANpkg{mlr3} \cr
+   \code{"regr"} \tab \code{"regr.mse"} \tab \CRANpkg{mlr3} \cr
+   \code{"surv"} \tab \code{"surv.cindex"} \tab \CRANpkg{mlr3proba} \cr
+   \code{"dens"} \tab \code{"dens.logloss"} \tab \CRANpkg{mlr3proba} \cr
+   \code{"classif_st"} \tab \code{"classif.ce"} \tab \CRANpkg{mlr3spatial} \cr
+   \code{"regr_st"} \tab \code{"regr.mse"} \tab \CRANpkg{mlr3spatial} \cr
+   \code{"clust"} \tab \code{"clust.dunn"} \tab \CRANpkg{mlr3cluster} \cr
+}
 }
 
 \examples{
@@ -53,7 +70,7 @@ learner = lrn("classif.rpart",
 
 # create auto tuner
 at = auto_tuner(
-  method = tnr("random_search"),
+  tuner = tnr("random_search"),
   learner = learner,
   resampling = rsmp ("holdout"),
   measure = msr("classif.ce"),
@@ -81,7 +98,7 @@ at$tuning_instance
 # Nested Resampling
 
 at = auto_tuner(
-  method = tnr("random_search"),
+  tuner = tnr("random_search"),
   learner = learner,
   resampling = rsmp ("holdout"),
   measure = msr("classif.ce"),
@@ -169,16 +186,19 @@ Hash (unique identifier) for this object.}
 Creates a new instance of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AutoTuner$new(
+  tuner,
   learner,
   resampling,
   measure = NULL,
   terminator,
-  tuner,
   search_space = NULL,
   store_tuning_instance = TRUE,
   store_benchmark_result = TRUE,
   store_models = FALSE,
   check_values = FALSE,
+  allow_hotstart = FALSE,
+  keep_hotstart_stack = FALSE,
+  evaluate_default = FALSE,
   callbacks = list()
 )}\if{html}{\out{</div>}}
 }
@@ -186,6 +206,9 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{tuner}}{(\link{Tuner})\cr
+Optimization algorithm.}
+
 \item{\code{learner}}{(\link[mlr3:Learner]{mlr3::Learner})\cr
 Learner to tune.}
 
@@ -201,9 +224,6 @@ Measure to optimize. If \code{NULL}, default measure is used.}
 
 \item{\code{terminator}}{(\link{Terminator})\cr
 Stop criterion of the tuning process.}
-
-\item{\code{tuner}}{(\link{Tuner})\cr
-Optimization algorithm.}
 
 \item{\code{search_space}}{(\link[paradox:ParamSet]{paradox::ParamSet})\cr
 Hyperparameter search space. If \code{NULL} (default), the search space is
@@ -227,6 +247,19 @@ combination is needed for measures that require a model.}
 If \code{TRUE}, hyperparameter values are checked before evaluation and
 performance scores after. If \code{FALSE} (default), values are unchecked but
 computational overhead is reduced.}
+
+\item{\code{allow_hotstart}}{(\code{logical(1)})\cr
+Allow to hotstart learners with previously fitted models. See also
+\link[mlr3:HotstartStack]{mlr3::HotstartStack}. The learner must support hotstarting. Sets
+\code{store_models = TRUE}.}
+
+\item{\code{keep_hotstart_stack}}{(\code{logical(1)})\cr
+If \code{TRUE}, \link[mlr3:HotstartStack]{mlr3::HotstartStack} is kept in \verb{$objective$hotstart_stack}
+after tuning.}
+
+\item{\code{evaluate_default}}{(\code{logical(1)})\cr
+If \code{TRUE}, learner is evaluated with hyperparameters set to their default
+values at the start of the optimization.}
 
 \item{\code{callbacks}}{(list of \link{CallbackTuning})\cr
 List of callbacks.}

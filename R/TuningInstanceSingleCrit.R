@@ -14,13 +14,44 @@
 #' If the available budget is exhausted, an exception is raised, and no further evaluations can be performed from this point on.
 #' The tuner is also supposed to store its final result, consisting of a  selected hyperparameter configuration and associated estimated performance values, by calling the method `instance$assign_result`.
 #'
+#' @section Default Measures:
+#' If no measure is passed, the default measure is used.
+#' The default measure depends on the task type.
+#'
+#' | Task           | Default Measure     | Package               |
+#' |----------------|---------------------|-----------------------|
+#' | `"classif"`    | `"classif.ce"`      | \CRANpkg{mlr3}        |
+#' | `"regr"`       | `"regr.mse"`        | \CRANpkg{mlr3}        |
+#' | `"surv"`       | `"surv.cindex"`     | \CRANpkg{mlr3proba}   |
+#' | `"dens"`       | `"dens.logloss"`    | \CRANpkg{mlr3proba}   |
+#' | `"classif_st"` | `"classif.ce"`      | \CRANpkg{mlr3spatial} |
+#' | `"regr_st"`    | `"regr.mse"`        | \CRANpkg{mlr3spatial} |
+#' | `"clust"`      | `"clust.dunn"`      | \CRANpkg{mlr3cluster} |
+#'
 #' @inheritSection ArchiveTuning Analysis
 #'
 #' @section Resources:
-#' * [book chapter](https://mlr3book.mlr-org.com/optimization.html) on hyperparameter optimization.
-#' * [book chapter](https://mlr3book.mlr-org.com/technical.html#sec-tuning-space) on tuning spaces.
-#' * [gallery post](https://mlr-org.com/gallery/series/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/) on tuning an svm.
-#' * [mlr3tuningspaces](https://mlr3tuningspaces.mlr-org.com/) extension package.
+#' There are several sections about hyperparameter optimization in the [mlr3book](https://mlr3book.mlr-org.com).
+#'
+#'  * Getting started with [hyperparameter optimization](https://mlr3book.mlr-org.com/optimization.html).
+#'  * [Tune](https://mlr3book.mlr-org.com/optimization.html#sec-tuning-instance) a simple classification tree on the Palmer Penguins data set.
+#'  * Learn about [tuning spaces](https://mlr3book.mlr-org.com/technical.html#sec-tuning-space).
+#'
+#' The [gallery](https://mlr-org.com/gallery-all-optimization.html) features a collection of case studies and demos about optimization.
+#'
+#'  * Learn more advanced methods with the [practical tuning series](https://mlr-org.com/gallery/series/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/).
+#'  * Simultaneously optimize hyperparameters and use [early stopping](https://mlr-org.com/gallery/optimization/2022-11-04-early-stopping-with-xgboost/) with XGBoost.
+#'  * Make us of proven [search space](https://mlr-org.com/gallery/optimization/2021-07-06-introduction-to-mlr3tuningspaces/).
+#'  * Learn about [hotstarting](https://mlr-org.com/gallery/optimization/2023-01-16-hotstart/) models.
+#'  * Run the [default hyperparameter configuration](https://mlr-org.com/gallery/optimization/2023-01-31-default-configuration/) of learners as a baseline.
+#'
+#' @section Extension Packages:
+#'
+#' mlr3tuning is extended by the following packages.
+#'
+#'  * [mlr3tuningspaces](https://github.com/mlr-org/mlr3tuningspaces) is a collection of search spaces from scientific articles for commonly used learners.
+#'  * [mlr3hyperband](https://github.com/mlr-org/mlr3hyperband) adds the Hyperband and Successive Halving algorithm.
+#'  * [mlr3mbo](https://github.com/mlr-org/mlr3mbo) adds Bayesian optimization methods.
 #'
 #' @template param_task
 #' @template param_learner

@@ -17,10 +17,15 @@
 #' During `$predict()` the `AutoTuner` just calls the predict method of the wrapped (inner) learner.
 #' A set timeout is disabled while fitting the final model.
 #'
+#' @inheritSection TuningInstanceSingleCrit Default Measures
+#'
 #' @section Resources:
-#' * [book chapter](https://mlr3book.mlr-org.com/optimization.html#sec-autotuner) on automatic tuning.
-#' * [book chapter](https://mlr3book.mlr-org.com/optimization.html#sec-nested-resampling) on nested resampling.
-#' * [gallery post](https://mlr-org.com/gallery/series/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/) on tuning and nested resampling.
+#' There are several sections about hyperparameter optimization in the [mlr3book](https://mlr3book.mlr-org.com).
+#'
+#'  * [Automate](https://mlr3book.mlr-org.com/optimization.html#sec-autotuner) the tuning.
+#'  * Estimate the model performance with [nested resampling](https://mlr3book.mlr-org.com/optimization.html#sec-model-performance).
+#'
+#' The [gallery](https://mlr-org.com/gallery-all-optimization.html) features a collection of case studies and demos about optimization.
 #'
 #' @section Nested Resampling:
 #' Nested resampling is performed by passing an [AutoTuner] to [mlr3::resample()] or [mlr3::benchmark()].
@@ -38,6 +43,9 @@
 #' @template param_store_benchmark_result
 #' @template param_store_models
 #' @template param_check_values
+#' @template param_allow_hotstart
+#' @template param_keep_hotstart_stack
+#' @template param_evaluate_default
 #' @template param_callbacks
 #'
 #' @export
@@ -55,7 +63,7 @@
 #'
 #' # create auto tuner
 #' at = auto_tuner(
-#'   method = tnr("random_search"),
+#'   tuner = tnr("random_search"),
 #'   learner = learner,
 #'   resampling = rsmp ("holdout"),
 #'   measure = msr("classif.ce"),
@@ -83,7 +91,7 @@
 #' # Nested Resampling
 #'
 #' at = auto_tuner(
-#'   method = tnr("random_search"),
+#'   tuner = tnr("random_search"),
 #'   learner = learner,
 #'   resampling = rsmp ("holdout"),
 #'   measure = msr("classif.ce"),
@@ -117,7 +125,7 @@ AutoTuner = R6Class("AutoTuner",
     #'
     #' @param tuner ([Tuner])\cr
     #'   Optimization algorithm.
-    initialize = function(learner, resampling, measure = NULL, terminator, tuner, search_space = NULL, store_tuning_instance = TRUE, store_benchmark_result = TRUE, store_models = FALSE, check_values = FALSE, callbacks = list()) {
+    initialize = function(tuner, learner, resampling, measure = NULL, terminator, search_space = NULL, store_tuning_instance = TRUE, store_benchmark_result = TRUE, store_models = FALSE, check_values = FALSE, allow_hotstart = FALSE, keep_hotstart_stack = FALSE, evaluate_default = FALSE, callbacks = list()) {
       learner = assert_learner(as_learner(learner, clone = TRUE))
 
       if (!is.null(search_space) && length(learner$param_set$get_values(type = "only_token")) > 0) {
@@ -125,6 +133,7 @@ AutoTuner = R6Class("AutoTuner",
       }
 
       ia = list()
+      self$tuner = assert_tuner(tuner)$clone()
       ia$learner = learner
       ia$resampling = assert_resampling(resampling)$clone()
       if (!is.null(measure)) ia$measure = assert_measure(as_measure(measure), learner = learner)
@@ -136,9 +145,11 @@ AutoTuner = R6Class("AutoTuner",
       private$.store_tuning_instance = assert_flag(store_tuning_instance) || ia$store_benchmark_result
 
       ia$check_values = assert_flag(check_values)
+      ia$allow_hotstart = assert_flag(allow_hotstart)
+      ia$keep_hotstart_stack = assert_flag(keep_hotstart_stack)
+      ia$evaluate_default = assert_flag(evaluate_default)
       ia$callbacks = assert_callbacks(as_callbacks(callbacks))
       self$instance_args = ia
-      self$tuner = assert_tuner(tuner)$clone()
 
       super$initialize(
         id = paste0(learner$id, ".tuned"),

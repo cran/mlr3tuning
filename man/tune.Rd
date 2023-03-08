@@ -5,7 +5,7 @@
 \title{Function for Tuning a Learner}
 \usage{
 tune(
-  method,
+  tuner,
   task,
   learner,
   resampling,
@@ -21,12 +21,12 @@ tune(
   keep_hotstart_stack = FALSE,
   evaluate_default = FALSE,
   callbacks = list(),
-  ...
+  method
 )
 }
 \arguments{
-\item{method}{(\code{character(1)} | \link{Tuner})\cr
-Key to retrieve tuner from \link{mlr_tuners} dictionary or \link{Tuner} object.}
+\item{tuner}{(\link{Tuner})\cr
+Optimization algorithm.}
 
 \item{task}{(\link[mlr3:Task]{mlr3::Task})\cr
 Task to operate on.}
@@ -46,10 +46,12 @@ A single measure creates a \link{TuningInstanceSingleCrit} and multiple measures
 If \code{NULL}, default measure is used.}
 
 \item{term_evals}{(\code{integer(1)})\cr
-Number of allowed evaluations.}
+Number of allowed evaluations.
+Ignored if \code{terminator} is passed.}
 
 \item{term_time}{(\code{integer(1)})\cr
-Maximum allowed time in seconds.}
+Maximum allowed time in seconds.
+Ignored if \code{terminator} is passed.}
 
 \item{terminator}{(\link{Terminator})\cr
 Stop criterion of the tuning process.}
@@ -90,8 +92,8 @@ values at the start of the optimization.}
 \item{callbacks}{(list of \link{CallbackTuning})\cr
 List of callbacks.}
 
-\item{...}{(named \code{list()})\cr
-Named arguments to be set as parameters of the tuner.}
+\item{method}{(\code{character(1)})\cr
+Deprecated. Use \code{tuner} instead.}
 }
 \value{
 \link{TuningInstanceSingleCrit} | \link{TuningInstanceMultiCrit}
@@ -99,7 +101,7 @@ Named arguments to be set as parameters of the tuner.}
 \description{
 Function to tune a \link[mlr3:Learner]{mlr3::Learner}.
 The function internally creates a \link{TuningInstanceSingleCrit} or \link{TuningInstanceMultiCrit} which describe the tuning problem.
-It executes the tuning with the \link{Tuner} (\code{method}) and returns the result with the tuning instance (\verb{$result}).
+It executes the tuning with the \link{Tuner} (\code{tuner}) and returns the result with the tuning instance (\verb{$result}).
 The \link{ArchiveTuning} (\verb{$archive}) stores all evaluated hyperparameter configurations and performance scores.
 }
 \details{
@@ -113,11 +115,33 @@ The search space is created from \link[paradox:to_tune]{paradox::TuneToken} or i
 }
 \section{Resources}{
 
+There are several sections about hyperparameter optimization in the \href{https://mlr3book.mlr-org.com}{mlr3book}.
 \itemize{
-\item \href{https://mlr3book.mlr-org.com/optimization.html}{book chapter} on hyperparameter optimization.
-\item \href{https://mlr3book.mlr-org.com/technical.html#sec-tuning-space}{book chapter} on tuning spaces.
-\item \href{https://mlr-org.com/gallery/series/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/}{gallery post} on tuning an svm.
-\item \href{https://mlr3tuningspaces.mlr-org.com/}{mlr3tuningspaces} extension package.
+\item Simplify tuning with the \href{https://mlr3book.mlr-org.com/optimization.html#sec-simplified-tuning}{\code{tune()}} function.
+\item Learn about \href{https://mlr3book.mlr-org.com/technical.html#sec-tuning-space}{tuning spaces}.
+}
+
+The \href{https://mlr-org.com/gallery-all-optimization.html}{gallery} features a collection of case studies and demos about optimization.
+\itemize{
+\item Optimize an rpart classification tree with only a \href{https://mlr-org.com/gallery/optimization/2022-11-10-hyperparameter-optimization-on-the-palmer-penguins/}{few lines of code}.
+\item Tune an XGBoost model with \href{https://mlr-org.com/gallery/optimization/2022-11-04-early-stopping-with-xgboost/}{early stopping}.
+\item Make us of proven \href{https://mlr-org.com/gallery/optimization/2021-07-06-introduction-to-mlr3tuningspaces/}{search space}.
+\item Learn about \href{https://mlr-org.com/gallery/optimization/2023-01-16-hotstart/}{hotstarting} models.
+}
+}
+
+\section{Default Measures}{
+
+If no measure is passed, the default measure is used.
+The default measure depends on the task type.\tabular{lll}{
+   Task \tab Default Measure \tab Package \cr
+   \code{"classif"} \tab \code{"classif.ce"} \tab \CRANpkg{mlr3} \cr
+   \code{"regr"} \tab \code{"regr.mse"} \tab \CRANpkg{mlr3} \cr
+   \code{"surv"} \tab \code{"surv.cindex"} \tab \CRANpkg{mlr3proba} \cr
+   \code{"dens"} \tab \code{"dens.logloss"} \tab \CRANpkg{mlr3proba} \cr
+   \code{"classif_st"} \tab \code{"classif.ce"} \tab \CRANpkg{mlr3spatial} \cr
+   \code{"regr_st"} \tab \code{"regr.mse"} \tab \CRANpkg{mlr3spatial} \cr
+   \code{"clust"} \tab \code{"clust.dunn"} \tab \CRANpkg{mlr3cluster} \cr
 }
 }
 
@@ -147,7 +171,7 @@ learner = lrn("classif.rpart",
 
 # Run tuning
 instance = tune(
-  method = tnr("random_search", batch_size = 2),
+  tuner = tnr("random_search", batch_size = 2),
   task = tsk("pima"),
   learner = learner,
   resampling = rsmp ("holdout"),

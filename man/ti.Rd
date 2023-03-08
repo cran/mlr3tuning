@@ -82,11 +82,35 @@ Function to construct a \link{TuningInstanceSingleCrit} or \link{TuningInstanceM
 }
 \section{Resources}{
 
+There are several sections about hyperparameter optimization in the \href{https://mlr3book.mlr-org.com}{mlr3book}.
 \itemize{
-\item \href{https://mlr3book.mlr-org.com/optimization.html}{book chapter} on hyperparameter optimization.
-\item \href{https://mlr3book.mlr-org.com/technical.html#sec-tuning-space}{book chapter} on tuning spaces.
-\item \href{https://mlr-org.com/gallery/series/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/}{gallery post} on tuning an svm.
-\item \href{https://mlr3tuningspaces.mlr-org.com/}{mlr3tuningspaces} extension package.
+\item Getting started with \href{https://mlr3book.mlr-org.com/optimization.html}{hyperparameter optimization}.
+\item \href{https://mlr3book.mlr-org.com/optimization.html#sec-tuning-instance}{Tune} a simple classification tree on the Palmer Penguins data set.
+\item Learn about \href{https://mlr3book.mlr-org.com/technical.html#sec-tuning-space}{tuning spaces}.
+}
+
+The \href{https://mlr-org.com/gallery-all-optimization.html}{gallery} features a collection of case studies and demos about optimization.
+\itemize{
+\item Learn more advanced methods with the \href{https://mlr-org.com/gallery/series/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/}{practical tuning series}.
+\item Simultaneously optimize hyperparameters and use \href{https://mlr-org.com/gallery/optimization/2022-11-04-early-stopping-with-xgboost/}{early stopping} with XGBoost.
+\item Make us of proven \href{https://mlr-org.com/gallery/optimization/2021-07-06-introduction-to-mlr3tuningspaces/}{search space}.
+\item Learn about \href{https://mlr-org.com/gallery/optimization/2023-01-16-hotstart/}{hotstarting} models.
+\item Run the \href{https://mlr-org.com/gallery/optimization/2023-01-31-default-configuration/}{default hyperparameter configuration} of learners as a baseline.
+}
+}
+
+\section{Default Measures}{
+
+If no measure is passed, the default measure is used.
+The default measure depends on the task type.\tabular{lll}{
+   Task \tab Default Measure \tab Package \cr
+   \code{"classif"} \tab \code{"classif.ce"} \tab \CRANpkg{mlr3} \cr
+   \code{"regr"} \tab \code{"regr.mse"} \tab \CRANpkg{mlr3} \cr
+   \code{"surv"} \tab \code{"surv.cindex"} \tab \CRANpkg{mlr3proba} \cr
+   \code{"dens"} \tab \code{"dens.logloss"} \tab \CRANpkg{mlr3proba} \cr
+   \code{"classif_st"} \tab \code{"classif.ce"} \tab \CRANpkg{mlr3spatial} \cr
+   \code{"regr_st"} \tab \code{"regr.mse"} \tab \CRANpkg{mlr3spatial} \cr
+   \code{"clust"} \tab \code{"clust.dunn"} \tab \CRANpkg{mlr3cluster} \cr
 }
 }
 

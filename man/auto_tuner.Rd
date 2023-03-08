@@ -5,7 +5,7 @@
 \title{Function for Automatic Tuning}
 \usage{
 auto_tuner(
-  method,
+  tuner,
   learner,
   resampling,
   measure = NULL,
@@ -17,13 +17,16 @@ auto_tuner(
   store_benchmark_result = TRUE,
   store_models = FALSE,
   check_values = FALSE,
+  allow_hotstart = FALSE,
+  keep_hotstart_stack = FALSE,
+  evaluate_default = FALSE,
   callbacks = list(),
-  ...
+  method
 )
 }
 \arguments{
-\item{method}{(\code{character(1)} | \link{Tuner})\cr
-Key to retrieve tuner from \link{mlr_tuners} dictionary or \link{Tuner} object.}
+\item{tuner}{(\link{Tuner})\cr
+Optimization algorithm.}
 
 \item{learner}{(\link[mlr3:Learner]{mlr3::Learner})\cr
 Learner to tune.}
@@ -39,10 +42,12 @@ This field, however, always returns the resampling passed in construction.}
 Measure to optimize. If \code{NULL}, default measure is used.}
 
 \item{term_evals}{(\code{integer(1)})\cr
-Number of allowed evaluations.}
+Number of allowed evaluations.
+Ignored if \code{terminator} is passed.}
 
 \item{term_time}{(\code{integer(1)})\cr
-Maximum allowed time in seconds.}
+Maximum allowed time in seconds.
+Ignored if \code{terminator} is passed.}
 
 \item{terminator}{(\link{Terminator})\cr
 Stop criterion of the tuning process.}
@@ -70,11 +75,24 @@ If \code{TRUE}, hyperparameter values are checked before evaluation and
 performance scores after. If \code{FALSE} (default), values are unchecked but
 computational overhead is reduced.}
 
+\item{allow_hotstart}{(\code{logical(1)})\cr
+Allow to hotstart learners with previously fitted models. See also
+\link[mlr3:HotstartStack]{mlr3::HotstartStack}. The learner must support hotstarting. Sets
+\code{store_models = TRUE}.}
+
+\item{keep_hotstart_stack}{(\code{logical(1)})\cr
+If \code{TRUE}, \link[mlr3:HotstartStack]{mlr3::HotstartStack} is kept in \verb{$objective$hotstart_stack}
+after tuning.}
+
+\item{evaluate_default}{(\code{logical(1)})\cr
+If \code{TRUE}, learner is evaluated with hyperparameters set to their default
+values at the start of the optimization.}
+
 \item{callbacks}{(list of \link{CallbackTuning})\cr
 List of callbacks.}
 
-\item{...}{(named \code{list()})\cr
-Named arguments to be set as parameters of the tuner.}
+\item{method}{(\code{character(1)})\cr
+Deprecated. Use \code{tuner} instead.}
 }
 \value{
 \link{AutoTuner}.
@@ -97,13 +115,30 @@ The respective model is available via field \code{at$learner$model}.
 During \verb{$predict()} the \code{AutoTuner} just calls the predict method of the wrapped (inner) learner.
 A set timeout is disabled while fitting the final model.
 }
+\section{Default Measures}{
+
+If no measure is passed, the default measure is used.
+The default measure depends on the task type.\tabular{lll}{
+   Task \tab Default Measure \tab Package \cr
+   \code{"classif"} \tab \code{"classif.ce"} \tab \CRANpkg{mlr3} \cr
+   \code{"regr"} \tab \code{"regr.mse"} \tab \CRANpkg{mlr3} \cr
+   \code{"surv"} \tab \code{"surv.cindex"} \tab \CRANpkg{mlr3proba} \cr
+   \code{"dens"} \tab \code{"dens.logloss"} \tab \CRANpkg{mlr3proba} \cr
+   \code{"classif_st"} \tab \code{"classif.ce"} \tab \CRANpkg{mlr3spatial} \cr
+   \code{"regr_st"} \tab \code{"regr.mse"} \tab \CRANpkg{mlr3spatial} \cr
+   \code{"clust"} \tab \code{"clust.dunn"} \tab \CRANpkg{mlr3cluster} \cr
+}
+}
+
 \section{Resources}{
 
+There are several sections about hyperparameter optimization in the \href{https://mlr3book.mlr-org.com}{mlr3book}.
 \itemize{
-\item \href{https://mlr3book.mlr-org.com/optimization.html#sec-autotuner}{book chapter} on automatic tuning.
-\item \href{https://mlr3book.mlr-org.com/optimization.html#sec-nested-resampling}{book chapter} on nested resampling.
-\item \href{https://mlr-org.com/gallery/series/2021-03-09-practical-tuning-series-tune-a-support-vector-machine/}{gallery post} on tuning and nested resampling.
+\item \href{https://mlr3book.mlr-org.com/optimization.html#sec-autotuner}{Automate} the tuning.
+\item Estimate the model performance with \href{https://mlr3book.mlr-org.com/optimization.html#sec-model-performance}{nested resampling}.
 }
+
+The \href{https://mlr-org.com/gallery-all-optimization.html}{gallery} features a collection of case studies and demos about optimization.
 }
 
 \section{Nested Resampling}{
@@ -117,7 +152,7 @@ If an instantiated resampling is passed, the \link{AutoTuner} fails when a row i
 
 \examples{
 at = auto_tuner(
-  method = tnr("random_search"),
+  tuner = tnr("random_search"),
   learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1, logscale = TRUE)),
   resampling = rsmp ("holdout"),
   measure = msr("classif.ce"),
