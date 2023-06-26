@@ -1,6 +1,6 @@
 Package: mlr3tuning
 Title: Hyperparameter Optimization for 'mlr3'
-Version: 0.18.0
+Version: 0.19.0
 Authors@R: c(
     person("Marc", "Becker", , "marcbecker@posteo.de", role = c("cre", "aut"),
            comment = c(ORCID = "0000-0002-8115-0400")),
@@ -28,8 +28,9 @@ BugReports: https://github.com/mlr-org/mlr3tuning/issues
 Depends: mlr3 (>= 0.14.1), paradox (>= 0.10.0), R (>= 3.1.0)
 Imports: bbotk (>= 0.7.2), checkmate (>= 2.0.0), data.table, lgr,
         mlr3misc (>= 0.11.0), R6
-Suggests: adagio, GenSA, irace, mlr3learners (>= 0.5.5), mlr3pipelines,
-        nloptr, rpart, testthat (>= 3.0.0), xgboost
+Suggests: adagio, GenSA, irace, knitr, mlr3learners (>= 0.5.5),
+        mlr3pipelines, nloptr, rmarkdown, rpart, testthat (>= 3.0.0),
+        xgboost
 Config/testthat/edition: 3
 Config/testthat/parallel: true
 Encoding: UTF-8
@@ -45,7 +46,8 @@ Collate: 'ArchiveTuning.R' 'AutoTuner.R' 'CallbackTuning.R'
         'bibentries.R' 'extract_inner_tuning_archives.R'
         'extract_inner_tuning_results.R' 'helper.R' 'mlr_callbacks.R'
         'reexport.R' 'sugar.R' 'tune.R' 'tune_nested.R' 'zzz.R'
-Packaged: 2023-03-08 18:22:57 UTC; marc
+VignetteBuilder: knitr
+Packaged: 2023-06-26 16:08:49 UTC; marc
 Author: Marc Becker [cre, aut] (<https://orcid.org/0000-0002-8115-0400>),
   Michel Lang [aut] (<https://orcid.org/0000-0001-9754-0393>),
   Jakob Richter [aut] (<https://orcid.org/0000-0003-4481-5554>),
@@ -53,4 +55,4 @@ Author: Marc Becker [cre, aut] (<https://orcid.org/0000-0002-8115-0400>),
   Daniel Schalk [aut] (<https://orcid.org/0000-0003-0950-1947>)
 Maintainer: Marc Becker <marcbecker@posteo.de>
 Repository: CRAN
-Date/Publication: 2023-03-08 19:10:02 UTC
+Date/Publication: 2023-06-26 16:50:02 UTC
