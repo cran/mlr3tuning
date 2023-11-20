@@ -27,22 +27,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
   }
 });
 </script>
-<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
-// v0.0.1
-// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
-
-document.addEventListener('DOMContentLoaded', function() {
-  const codeList = document.getElementsByClassName("sourceCode");
-  for (var i = 0; i < codeList.length; i++) {
-    var linkList = codeList[i].getElementsByTagName('a');
-    for (var j = 0; j < linkList.length; j++) {
-      if (linkList[j].innerHTML === "") {
-        linkList[j].setAttribute('aria-hidden', 'true');
-      }
-    }
-  }
-});
-</script>
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -257,55 +241,133 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <div id="adding-new-tuners" class="section level1">
 <h1>Adding new Tuners</h1>
-<p>In this vignette, we show how to implement a custom tuner for <code>mlr3tuning</code>. The main task of a tuner is to iteratively propose new hyperparameter configurations that we want to evaluate for a given task, learner and validation strategy. The second task is to decide which configuration should be returned as a tuning result - usually it is the configuration that led to the best observed performance value. If you want to implement your own tuner, you have to implement an R6-Object that offers an <a href="#tuner-optimize"><code>.optimize</code></a> method that implements the iterative proposal and you are free to implement <a href="#tuner-add-result"><code>.assign_result</code></a> to differ from the before-mentioned default process of determining the result.</p>
-<p>Before you start with the implementation make yourself familiar with the main R6-Objects in <code>bbotk</code> (Black-Box Optimization Toolkit). This package does not only provide basic black box optimization algorithms and but also the objects that represent the optimization problem (<code>OptimInstance</code>) and the log of all evaluated configurations (<code>Archive</code>). d There are two ways to implement a new tuner: a ) If your new tuner can be applied to any kind of optimization problem it should be implemented as a <code>Optimizer</code>. Any <code>Optimizer</code> can be easily transformed to a <code>Tuner</code>. b) If the new custom tuner is only usable for hyperparameter tuning, for example because it needs to access the task, learner or resampling objects it should be directly implemented in <code>mlr3tuning</code> as a <code>Tuner</code>.</p>
+<p>In this vignette, we show how to implement a custom tuner for
+<code>mlr3tuning</code>. The main task of a tuner is to iteratively
+propose new hyperparameter configurations that we want to evaluate for a
+given task, learner and validation strategy. The second task is to
+decide which configuration should be returned as a tuning result -
+usually it is the configuration that led to the best observed
+performance value. If you want to implement your own tuner, you have to
+implement an R6-Object that offers an <a href="#tuner-optimize"><code>.optimize</code></a> method that implements
+the iterative proposal and you are free to implement <a href="#tuner-add-result"><code>.assign_result</code></a> to differ from
+the before-mentioned default process of determining the result.</p>
+<p>Before you start with the implementation make yourself familiar with
+the main R6-Objects in <code>bbotk</code> (Black-Box Optimization
+Toolkit). This package does not only provide basic black box
+optimization algorithms and but also the objects that represent the
+optimization problem (<code>OptimInstance</code>) and the log of all
+evaluated configurations (<code>Archive</code>). d There are two ways to
+implement a new tuner: a ) If your new tuner can be applied to any kind
+of optimization problem it should be implemented as a
+<code>Optimizer</code>. Any <code>Optimizer</code> can be easily
+transformed to a <code>Tuner</code>. b) If the new custom tuner is only
+usable for hyperparameter tuning, for example because it needs to access
+the task, learner or resampling objects it should be directly
+implemented in <code>mlr3tuning</code> as a <code>Tuner</code>.</p>
 <div id="adding-a-new-tuner" class="section level2">
 <h2>Adding a new Tuner</h2>
-<p>This is a summary of steps for adding a new tuner. The fifth step is only required if the new tuner is added via <code>bbotk</code>.</p>
+<p>This is a summary of steps for adding a new tuner. The fifth step is
+only required if the new tuner is added via <code>bbotk</code>.</p>
 <ol style="list-style-type: decimal">
-<li>Check the tuner does not already exist as a <a href="https://github.com/mlr-org/bbotk/tree/master/R"><code>Optimizer</code></a> or <a href="https://github.com/mlr-org/mlr3tuning/tree/master/R"><code>Tuner</code></a> in the GitHub repositories.</li>
+<li>Check the tuner does not already exist as a <a href="https://github.com/mlr-org/bbotk/tree/master/R"><code>Optimizer</code></a>
+or <a href="https://github.com/mlr-org/mlr3tuning/tree/master/R"><code>Tuner</code></a>
+in the GitHub repositories.</li>
 <li>Use one of the existing optimizers / tuners as a <a href="#tuner-template">template</a>.</li>
-<li>Overwrite the <a href="#tuner-optimize"><code>.optimize</code></a> private method of the optimizer / tuner.</li>
-<li>Optionally, overwrite the default <a href="#tuner-add-result"><code>.assign_result</code></a> private method.</li>
-<li>Use the <a href="#tuner-from-optimizer"><code>mlr3tuning::TunerFromOptimizer</code></a> class to transform the <code>Optimizer</code> to a <code>Tuner</code>.</li>
-<li>Add <a href="#tuner-test">unit tests</a> for the tuner and optionally for the optimizer.</li>
-<li>Open a new pull request for the <a href="https://github.com/mlr-org/mlr3tuning/pulls"><code>Tuner</code></a> and optionally a second one for the <a href="https://github.com/mlr-org/bbotk/pulls">`Optimizer</a>.</li>
+<li>Overwrite the <a href="#tuner-optimize"><code>.optimize</code></a>
+private method of the optimizer / tuner.</li>
+<li>Optionally, overwrite the default <a href="#tuner-add-result"><code>.assign_result</code></a> private
+method.</li>
+<li>Use the <a href="#tuner-from-optimizer"><code>mlr3tuning::TunerFromOptimizer</code></a>
+class to transform the <code>Optimizer</code> to a
+<code>Tuner</code>.</li>
+<li>Add <a href="#tuner-test">unit tests</a> for the tuner and
+optionally for the optimizer.</li>
+<li>Open a new pull request for the <a href="https://github.com/mlr-org/mlr3tuning/pulls"><code>Tuner</code></a>
+and optionally a second one for the <a href="https://github.com/mlr-org/bbotk/pulls">`Optimizer</a>.</li>
 </ol>
 </div>
 <div id="tuner-template" class="section level2">
 <h2>Template</h2>
-<p>If the new custom tuner is implemented via <code>bbotk</code>, use one of the existing optimizer as a template e.g. <a href="https://github.com/mlr-org/bbotk/blob/master/R/OptimizerRandomSearch.R"><code>bbotk::OptimizerRandomSearch</code></a>. There are currently only two tuners that are not based on a <code>Optimizer</code>: <a href="https://github.com/mlr-org/mlr3hyperband/blob/master/R/TunerHyperband.R"><code>mlr3hyperband::TunerHyperband</code></a> and <a href="https://github.com/mlr-org/mlr3tuning/blob/master/R/TunerIrace.R"><code>mlr3tuning::TunerIrace</code></a>. Both are rather complex but you can still use the documentation and class structure as a template. The following steps are identical for optimizers and tuners.</p>
-<p>Rewrite the meta information in the documentation and create a new class name. Scientific sources can be added in <code>R/bibentries.R</code> which are added under <code>@source</code> in the documentation. The example and dictionary sections of the documentation are auto-generated based on the <code>@templateVar id &lt;tuner_id&gt;</code>. Change the parameter set of the optimizer / tuner and document them under <code>@section Parameters</code>. Do not forget to change <code>mlr_optimizers$add()</code> / <code>mlr_tuners$add()</code> in the last line which adds the optimizer / tuner to the dictionary.</p>
+<p>If the new custom tuner is implemented via <code>bbotk</code>, use
+one of the existing optimizer as a template e.g. <a href="https://github.com/mlr-org/bbotk/blob/master/R/OptimizerRandomSearch.R"><code>bbotk::OptimizerRandomSearch</code></a>.
+There are currently only two tuners that are not based on a
+<code>Optimizer</code>: <a href="https://github.com/mlr-org/mlr3hyperband/blob/master/R/TunerHyperband.R"><code>mlr3hyperband::TunerHyperband</code></a>
+and <a href="https://github.com/mlr-org/mlr3tuning/blob/master/R/TunerIrace.R"><code>mlr3tuning::TunerIrace</code></a>.
+Both are rather complex but you can still use the documentation and
+class structure as a template. The following steps are identical for
+optimizers and tuners.</p>
+<p>Rewrite the meta information in the documentation and create a new
+class name. Scientific sources can be added in
+<code>R/bibentries.R</code> which are added under <code>@source</code>
+in the documentation. The example and dictionary sections of the
+documentation are auto-generated based on the
+<code>@templateVar id &lt;tuner_id&gt;</code>. Change the parameter set
+of the optimizer / tuner and document them under
+<code>@section Parameters</code>. Do not forget to change
+<code>mlr_optimizers$add()</code> / <code>mlr_tuners$add()</code> in the
+last line which adds the optimizer / tuner to the dictionary.</p>
 </div>
 <div id="optimize-method" class="section level2">
 <h2>Optimize method</h2>
-<p>The <code>$.optimize()</code> private method is the main part of the tuner. It takes an instance, proposes new points and calls the <code>$eval_batch()</code> method of the instance to evaluate them. Here you can go two ways: Implement the iterative process yourself or call an external optimization function that resides in another package.</p>
+<p>The <code>$.optimize()</code> private method is the main part of the
+tuner. It takes an instance, proposes new points and calls the
+<code>$eval_batch()</code> method of the instance to evaluate them. Here
+you can go two ways: Implement the iterative process yourself or call an
+external optimization function that resides in another package.</p>
 <div id="writing-a-custom-iteration" class="section level3">
 <h3>Writing a custom iteration</h3>
-<p>Usually, the proposal and evaluation is done in a <code>repeat</code>-loop which you have to implement. Please consider the following points:</p>
+<p>Usually, the proposal and evaluation is done in a
+<code>repeat</code>-loop which you have to implement. Please consider
+the following points:</p>
 <ul>
 <li>You can evaluate one or multiple points per iteration</li>
-<li>You don’t have to care about termination, as <code>$eval_batch()</code> won’t allow more evaluations then allowed by the <code>bbotk::Terminator</code>. This implies, that code after the <code>repeat</code>-loop will not be executed.</li>
-<li>You don’t have to care about keeping track of the evaluations as every evaluation is automatically stored in <code>inst$archive</code>.</li>
-<li>If you want to log additional information for each evaluation of the <code>Objective</code> in the <code>Archive</code> you can simply add columns to the <code>data.table</code> object that is passed to <code>$eval_batch()</code>.</li>
+<li>You don’t have to care about termination, as
+<code>$eval_batch()</code> won’t allow more evaluations then allowed by
+the <code>bbotk::Terminator</code>. This implies, that code after the
+<code>repeat</code>-loop will not be executed.</li>
+<li>You don’t have to care about keeping track of the evaluations as
+every evaluation is automatically stored in
+<code>inst$archive</code>.</li>
+<li>If you want to log additional information for each evaluation of the
+<code>Objective</code> in the <code>Archive</code> you can simply add
+columns to the <code>data.table</code> object that is passed to
+<code>$eval_batch()</code>.</li>
 </ul>
 </div>
 <div id="calling-an-external-optimization-function" class="section level3">
 <h3>Calling an external optimization function</h3>
-<p>Optimization functions from external packages usually take an objective function as an argument. In this case, you can pass <code>inst$objective_function</code> which internally calls <code>$eval_batch()</code>. Check out <a href="https://github.com/mlr-org/bbotk/blob/master/R/OptimizerGenSA.R"><code>OptimizerGenSA</code></a> for an example.</p>
+<p>Optimization functions from external packages usually take an
+objective function as an argument. In this case, you can pass
+<code>inst$objective_function</code> which internally calls
+<code>$eval_batch()</code>. Check out <a href="https://github.com/mlr-org/bbotk/blob/master/R/OptimizerGenSA.R"><code>OptimizerGenSA</code></a>
+for an example.</p>
 </div>
 </div>
 <div id="assign-result-method" class="section level2">
 <h2>Assign result method</h2>
-<p>The default <code>$.assign_result()</code> private method simply obtains the best performing result from the archive. The default method can be overwritten if the new tuner determines the result of the optimization in a different way. The new function must call the <code>$assign_result()</code> method of the instance to write the final result to the instance. See <a href="https://github.com/mlr-org/mlr3tuning/blob/master/R/TunerIrace.R"><code>mlr3tuning::TunerIrace</code></a> for an implementation of <code>$.assign_result()</code>.</p>
+<p>The default <code>$.assign_result()</code> private method simply
+obtains the best performing result from the archive. The default method
+can be overwritten if the new tuner determines the result of the
+optimization in a different way. The new function must call the
+<code>$assign_result()</code> method of the instance to write the final
+result to the instance. See <a href="https://github.com/mlr-org/mlr3tuning/blob/master/R/TunerIrace.R"><code>mlr3tuning::TunerIrace</code></a>
+for an implementation of <code>$.assign_result()</code>.</p>
 </div>
 <div id="transform-optimizer-to-tuner" class="section level2">
 <h2>Transform optimizer to tuner</h2>
-<p>This step is only needed if you implement via <code>bbotk</code>. The <code>mlr3tuning::TunerFromOptimizer</code> class transforms a <code>Optimizer</code> to a <code>Tuner</code>. Just add the <code>Optimizer</code> to the <code>optimizer</code> field. See <a href="https://github.com/mlr-org/mlr3tuning/blob/master/R/TunerRandomSearch.R"><code>mlr3tuning::TunerRandomSearch</code></a> for an example.</p>
+<p>This step is only needed if you implement via <code>bbotk</code>. The
+<code>mlr3tuning::TunerFromOptimizer</code> class transforms a
+<code>Optimizer</code> to a <code>Tuner</code>. Just add the
+<code>Optimizer</code> to the <code>optimizer</code> field. See <a href="https://github.com/mlr-org/mlr3tuning/blob/master/R/TunerRandomSearch.R"><code>mlr3tuning::TunerRandomSearch</code></a>
+for an example.</p>
 </div>
 <div id="add-unit-tests" class="section level2">
 <h2>Add unit tests</h2>
-<p>The new custom tuner should be thoroughly tested with unit tests. <code>Tuner</code>s can be tested with the <code>test_tuner()</code> helper function. If you added the Tuner via a <code>Optimizer</code>, you should additionally test the <code>Optimizer</code> with the <code>test_optimizer()</code> helper function.</p>
+<p>The new custom tuner should be thoroughly tested with unit tests.
+<code>Tuner</code>s can be tested with the <code>test_tuner()</code>
+helper function. If you added the Tuner via a <code>Optimizer</code>,
+you should additionally test the <code>Optimizer</code> with the
+<code>test_optimizer()</code> helper function.</p>
 </div>
 </div>
 
