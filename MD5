@@ -1,6 +1,6 @@
-4e1d5ae543da058e5e33f6d291749725 *DESCRIPTION
+797b2abeb9d825eb52b77b0c22b4b9dd *DESCRIPTION
 ed63dbf3da6e2750f77b67590cf15758 *NAMESPACE
-a41395f65db7b42d4e6284d81174b000 *NEWS.md
+2ebb472394ee662e86baf1f23c2edb12 *NEWS.md
 1e85589d15fe2bdfd1340f59795e1be2 *R/ArchiveTuning.R
 9efa37ff706d8e4a4d549b40bd4e95ac *R/AutoTuner.R
 17f403dcf1decb84e982ea30cb136da6 *R/CallbackTuning.R
@@ -30,7 +30,7 @@ ef66f2195ab252f1bb34c4594ec26868 *R/mlr_callbacks.R
 0a7a040a02109bee6a7fe27abcf94dc5 *R/sugar.R
 56488eb0fd4eb00928bd6f4fd6b0cefe *R/tune.R
 c06e9b3c4ee52db8b3c368ed5eb21312 *R/tune_nested.R
-a64e137fed3a85ce2a68415354650abe *R/zzz.R
+80b4152e469c69573de65a5144c350f5 *R/zzz.R
 dfb945a26000ba6d92c8e2d00df1de5a *README.md
 7080893e02c49cd296d4424b9be55069 *build/partial.rdb
 96b8824d7cfbe51df13f04fa8e922ebf *build/vignette.rds

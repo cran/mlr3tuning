@@ -1,3 +1,7 @@
+# mlr3tuning 0.19.2
+
+* refactor: Change thread limits.
+
 # mlr3tuning 0.19.1
 
 * refactor: Speed up the tuning process by minimizing the number of deep clones and parameter checks.
