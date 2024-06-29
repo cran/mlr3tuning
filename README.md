@@ -49,6 +49,8 @@ There are several sections about hyperparameter optimization in the
 
 -   Getting started with [hyperparameter
     optimization](https://mlr3book.mlr-org.com/chapters/chapter4/hyperparameter_optimization.html).
+-   An overview of all tuners can be found on our
+    [website](https://mlr-org.com/tuners.html).
 -   [Tune](https://mlr3book.mlr-org.com/chapters/chapter4/hyperparameter_optimization.html#sec-model-tuning)
     a support vector machine on the Sonar data set.
 -   Learn about [tuning
@@ -105,7 +107,8 @@ machine on the
 set.
 
 ``` r
-library("mlr3verse")
+library("mlr3learners")
+library("mlr3tuning")
 
 learner = lrn("classif.svm",
   cost  = to_tune(1e-5, 1e5, logscale = TRUE),
@@ -129,9 +132,9 @@ instance = ti(
 instance
 ```
 
-    ## <TuningInstanceSingleCrit>
+    ## <TuningInstanceBatchSingleCrit>
     ## * State:  Not optimized
-    ## * Objective: <ObjectiveTuning:classif.svm_on_sonar>
+    ## * Objective: <ObjectiveTuningBatch:classif.svm_on_sonar>
     ## * Search Space:
     ##       id    class     lower    upper nlevels
     ## 1:  cost ParamDbl -11.51293 11.51293     Inf
@@ -145,11 +148,11 @@ tuner = tnr("grid_search", resolution = 5)
 tuner
 ```
 
-    ## <TunerGridSearch>: Grid Search
-    ## * Parameters: resolution=5, batch_size=1
+    ## <TunerBatchGridSearch>: Grid Search
+    ## * Parameters: batch_size=1, resolution=5
     ## * Parameter classes: ParamLgl, ParamInt, ParamDbl, ParamFct
     ## * Properties: dependencies, single-crit, multi-crit
-    ## * Packages: mlr3tuning
+    ## * Packages: mlr3tuning, bbotk
 
 To start the tuning, we simply pass the tuning instance to the tuner.
 
@@ -158,7 +161,7 @@ tuner$optimize(instance)
 ```
 
     ##        cost     gamma learner_param_vals  x_domain classif.ce
-    ## 1: 5.756463 -5.756463          <list[4]> <list[2]>  0.1637681
+    ## 1: 5.756463 -5.756463          <list[4]> <list[2]>  0.2063492
 
 The tuner returns the best hyperparameter configuration and the
 corresponding measured performance.
@@ -169,18 +172,18 @@ The archive contains all evaluated hyperparameter configurations.
 as.data.table(instance$archive)[, .(cost, gamma, classif.ce, batch_nr, resample_result)]
 ```
 
-    ##           cost      gamma classif.ce batch_nr  resample_result
-    ##  1:  -5.756463   5.756463  0.4665977        1 <ResampleResult>
-    ##  2:   5.756463  -5.756463  0.1637681        2 <ResampleResult>
-    ##  3:  11.512925   5.756463  0.4665977        3 <ResampleResult>
-    ##  4:   5.756463  11.512925  0.4665977        4 <ResampleResult>
-    ##  5: -11.512925 -11.512925  0.4665977        5 <ResampleResult>
-    ## ---                                                           
-    ## 21:  -5.756463  -5.756463  0.4665977       21 <ResampleResult>
-    ## 22:  11.512925  11.512925  0.4665977       22 <ResampleResult>
-    ## 23: -11.512925  11.512925  0.4665977       23 <ResampleResult>
-    ## 24:  11.512925  -5.756463  0.1637681       24 <ResampleResult>
-    ## 25:   0.000000  -5.756463  0.2599034       25 <ResampleResult>
+    ##           cost     gamma classif.ce batch_nr  resample_result
+    ##  1:   5.756463  0.000000  0.4661146        1 <ResampleResult>
+    ##  2:  11.512925  0.000000  0.4661146        2 <ResampleResult>
+    ##  3: -11.512925  5.756463  0.4661146        3 <ResampleResult>
+    ##  4: -11.512925  0.000000  0.4661146        4 <ResampleResult>
+    ##  5:  -5.756463 11.512925  0.4661146        5 <ResampleResult>
+    ## ---                                                          
+    ## 21:  11.512925  5.756463  0.4661146       21 <ResampleResult>
+    ## 22: -11.512925 11.512925  0.4661146       22 <ResampleResult>
+    ## 23:   0.000000  5.756463  0.4661146       23 <ResampleResult>
+    ## 24:   5.756463 11.512925  0.4661146       24 <ResampleResult>
+    ## 25: -11.512925 -5.756463  0.4661146       25 <ResampleResult>
 
 The [mlr3viz](https://mlr3viz.mlr-org.com/) package visualizes tuning
 results.

@@ -21,6 +21,15 @@ The respective model is available via field \code{at$learner$model}.
 During \verb{$predict()} the \code{AutoTuner} just calls the predict method of the wrapped (inner) learner.
 A set timeout is disabled while fitting the final model.
 }
+\section{Validation}{
+
+Both, the tuned \link[mlr3:Learner]{mlr3::Learner} and the \code{AutoTuner} itself can make use of validation data.
+the \verb{$validate} field of the \code{AutoTuner} determines how validation is done during the final model fit.
+In most cases, this should be left as \code{NULL}.
+The \verb{$validate} field of the tuned \link[mlr3:Learner]{mlr3::Learner} specifies how the validation data is constructed
+during the hyperparameter optimization.
+}
+
 \section{Resources}{
 
 There are several sections about hyperparameter optimization in the \href{https://mlr3book.mlr-org.com}{mlr3book}.
@@ -123,7 +132,7 @@ rr$aggregate()
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
 \item{\code{instance_args}}{(\code{list()})\cr
-All arguments from construction to create the \link{TuningInstanceSingleCrit}.}
+All arguments from construction to create the \link{TuningInstanceBatchSingleCrit}.}
 
 \item{\code{tuner}}{(\link{Tuner})\cr
 Optimization algorithm.}
@@ -133,17 +142,23 @@ Optimization algorithm.}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{archive}}{\link{ArchiveTuning}\cr
-Archive of the \link{TuningInstanceSingleCrit}.}
+\item{\code{internal_valid_scores}}{Retrieves the inner validation scores as a named \code{list()}.
+Returns \code{NULL} if learner is not trained yet.}
+
+\item{\code{validate}}{How to construct the internal validation data. This parameter can be either \code{NULL},
+a ratio in $(0, 1)$, \code{"test"}, or \code{"predefined"}.}
+
+\item{\code{archive}}{\link{ArchiveBatchTuning}\cr
+Archive of the \link{TuningInstanceBatchSingleCrit}.}
 
 \item{\code{learner}}{(\link[mlr3:Learner]{mlr3::Learner})\cr
 Trained learner}
 
-\item{\code{tuning_instance}}{(\link{TuningInstanceSingleCrit})\cr
+\item{\code{tuning_instance}}{(\link{TuningInstanceAsyncSingleCrit} | \link{TuningInstanceBatchSingleCrit})\cr
 Internally created tuning instance with all intermediate results.}
 
 \item{\code{tuning_result}}{(\link[data.table:data.table]{data.table::data.table})\cr
-Short-cut to \code{result} from \link{TuningInstanceSingleCrit}.}
+Short-cut to \code{result} from  tuning instance.}
 
 \item{\code{predict_type}}{(\code{character(1)})\cr
 Stores the currently active predict type, e.g. \code{"response"}.
@@ -167,6 +182,9 @@ Hash (unique identifier) for this partial object, excluding some components whic
 \item \href{#method-AutoTuner-oob_error}{\code{AutoTuner$oob_error()}}
 \item \href{#method-AutoTuner-loglik}{\code{AutoTuner$loglik()}}
 \item \href{#method-AutoTuner-print}{\code{AutoTuner$print()}}
+\item \href{#method-AutoTuner-marshal}{\code{AutoTuner$marshal()}}
+\item \href{#method-AutoTuner-unmarshal}{\code{AutoTuner$unmarshal()}}
+\item \href{#method-AutoTuner-marshaled}{\code{AutoTuner$marshaled()}}
 \item \href{#method-AutoTuner-clone}{\code{AutoTuner$clone()}}
 }
 }
@@ -199,10 +217,9 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
   store_benchmark_result = TRUE,
   store_models = FALSE,
   check_values = FALSE,
-  allow_hotstart = FALSE,
-  keep_hotstart_stack = FALSE,
-  evaluate_default = FALSE,
-  callbacks = list()
+  callbacks = NULL,
+  rush = NULL,
+  validate = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -225,16 +242,16 @@ This field, however, always returns the resampling passed in construction.}
 \item{\code{measure}}{(\link[mlr3:Measure]{mlr3::Measure})\cr
 Measure to optimize. If \code{NULL}, default measure is used.}
 
-\item{\code{terminator}}{(\link{Terminator})\cr
+\item{\code{terminator}}{(\link[bbotk:Terminator]{bbotk::Terminator})\cr
 Stop criterion of the tuning process.}
 
 \item{\code{search_space}}{(\link[paradox:ParamSet]{paradox::ParamSet})\cr
 Hyperparameter search space. If \code{NULL} (default), the search space is
-constructed from the \link{TuneToken} of the learner's parameter set
+constructed from the \link[paradox:to_tune]{paradox::TuneToken} of the learner's parameter set
 (learner$param_set).}
 
 \item{\code{store_tuning_instance}}{(\code{logical(1)})\cr
-If \code{TRUE} (default), stores the internally created \link{TuningInstanceSingleCrit} with all intermediate results in slot \verb{$tuning_instance}.}
+If \code{TRUE} (default), stores the internally created \link{TuningInstanceBatchSingleCrit} with all intermediate results in slot \verb{$tuning_instance}.}
 
 \item{\code{store_benchmark_result}}{(\code{logical(1)})\cr
 If \code{TRUE} (default), store resample result of evaluated hyperparameter
@@ -251,21 +268,14 @@ If \code{TRUE}, hyperparameter values are checked before evaluation and
 performance scores after. If \code{FALSE} (default), values are unchecked but
 computational overhead is reduced.}
 
-\item{\code{allow_hotstart}}{(\code{logical(1)})\cr
-Allow to hotstart learners with previously fitted models. See also
-\link[mlr3:HotstartStack]{mlr3::HotstartStack}. The learner must support hotstarting. Sets
-\code{store_models = TRUE}.}
-
-\item{\code{keep_hotstart_stack}}{(\code{logical(1)})\cr
-If \code{TRUE}, \link[mlr3:HotstartStack]{mlr3::HotstartStack} is kept in \verb{$objective$hotstart_stack}
-after tuning.}
-
-\item{\code{evaluate_default}}{(\code{logical(1)})\cr
-If \code{TRUE}, learner is evaluated with hyperparameters set to their default
-values at the start of the optimization.}
-
-\item{\code{callbacks}}{(list of \link{CallbackTuning})\cr
+\item{\code{callbacks}}{(list of \link[mlr3misc:Callback]{mlr3misc::Callback})\cr
 List of callbacks.}
+
+\item{\code{rush}}{(\code{Rush})\cr
+If a rush instance is supplied, the tuning runs without batches.}
+
+\item{\code{validate}}{(\code{numeric(1)}, \code{"test"}, \code{"predefined"} or \code{NULL})\cr
+How to construct the internal validation data.}
 }
 \if{html}{\out{</div>}}
 }
@@ -289,7 +299,7 @@ Depth of recursion for multiple nested objects.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-\link{Learner}.
+\link[mlr3:Learner]{mlr3::Learner}.
 }
 }
 \if{html}{\out{<hr>}}
@@ -360,6 +370,58 @@ Printer.
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AutoTuner-marshal"></a>}}
+\if{latex}{\out{\hypertarget{method-AutoTuner-marshal}{}}}
+\subsection{Method \code{marshal()}}{
+Marshal the learner.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AutoTuner$marshal(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{(any)\cr
+Additional parameters.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+self
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AutoTuner-unmarshal"></a>}}
+\if{latex}{\out{\hypertarget{method-AutoTuner-unmarshal}{}}}
+\subsection{Method \code{unmarshal()}}{
+Unmarshal the learner.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AutoTuner$unmarshal(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{(any)\cr
+Additional parameters.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+self
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AutoTuner-marshaled"></a>}}
+\if{latex}{\out{\hypertarget{method-AutoTuner-marshaled}{}}}
+\subsection{Method \code{marshaled()}}{
+Whether the learner is marshaled.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AutoTuner$marshaled()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-AutoTuner-clone"></a>}}

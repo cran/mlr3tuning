@@ -13,9 +13,8 @@ tnrs(.keys, ...)
 \item{.key}{(\code{character(1)})\cr
 Key passed to the respective \link[mlr3misc:Dictionary]{dictionary} to retrieve the object.}
 
-\item{...}{(named \code{list()})\cr
-Named arguments passed to the constructor, to be set as parameters in the \link[paradox:ParamSet]{paradox::ParamSet}, or to be set as public field.
-See \code{\link[mlr3misc:dictionary_sugar_get]{mlr3misc::dictionary_sugar_get()}} for more details.}
+\item{...}{(any)\cr
+Additional arguments.}
 
 \item{.keys}{(\code{character()})\cr
 Keys passed to the respective \link[mlr3misc:Dictionary]{dictionary} to retrieve multiple objects.}
@@ -29,8 +28,8 @@ Relies on \code{\link[mlr3misc:dictionary_sugar_get]{mlr3misc::dictionary_sugar_
 \itemize{
 \item \code{tnr()} for a \link{Tuner} from \link{mlr_tuners}.
 \item \code{tnrs()} for a list of \link[=Tuner]{Tuners} from \link{mlr_tuners}.
-\item \code{trm()} for a \link{Terminator} from \link{mlr_terminators}.
-\item \code{trms()} for a list of \link[=Terminator]{Terminators} from \link{mlr_terminators}.
+\item \code{trm()} for a \link[bbotk:Terminator]{bbotk::Terminator} from \link{mlr_terminators}.
+\item \code{trms()} for a list of \link[bbotk:Terminator]{Terminators} from \link{mlr_terminators}.
 }
 }
 \examples{

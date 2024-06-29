@@ -277,7 +277,7 @@ in the GitHub repositories.</li>
 private method of the optimizer / tuner.</li>
 <li>Optionally, overwrite the default <a href="#tuner-add-result"><code>.assign_result</code></a> private
 method.</li>
-<li>Use the <a href="#tuner-from-optimizer"><code>mlr3tuning::TunerFromOptimizer</code></a>
+<li>Use the <a href="#tuner-from-optimizer"><code>mlr3tuning::TunerBatchFromOptimizerBatch</code></a>
 class to transform the <code>Optimizer</code> to a
 <code>Tuner</code>.</li>
 <li>Add <a href="#tuner-test">unit tests</a> for the tuner and
@@ -289,10 +289,10 @@ and optionally a second one for the <a href="https://github.com/mlr-org/bbotk/pu
 <div id="tuner-template" class="section level2">
 <h2>Template</h2>
 <p>If the new custom tuner is implemented via <code>bbotk</code>, use
-one of the existing optimizer as a template e.g. <a href="https://github.com/mlr-org/bbotk/blob/master/R/OptimizerRandomSearch.R"><code>bbotk::OptimizerRandomSearch</code></a>.
+one of the existing optimizer as a template e.g. <a href="https://github.com/mlr-org/bbotk/blob/master/R/OptimizerBatchRandomSearch.R"><code>bbotk::OptimizerRandomSearch</code></a>.
 There are currently only two tuners that are not based on a
-<code>Optimizer</code>: <a href="https://github.com/mlr-org/mlr3hyperband/blob/master/R/TunerHyperband.R"><code>mlr3hyperband::TunerHyperband</code></a>
-and <a href="https://github.com/mlr-org/mlr3tuning/blob/master/R/TunerIrace.R"><code>mlr3tuning::TunerIrace</code></a>.
+<code>Optimizer</code>: <a href="https://github.com/mlr-org/mlr3hyperband/blob/master/R/TunerBatchHyperband.R"><code>mlr3hyperband::TunerHyperband</code></a>
+and <a href="https://github.com/mlr-org/mlr3tuning/blob/master/R/TunerBatchIrace.R"><code>mlr3tuning::TunerIrace</code></a>.
 Both are rather complex but you can still use the documentation and
 class structure as a template. The following steps are identical for
 optimizers and tuners.</p>
@@ -339,7 +339,7 @@ columns to the <code>data.table</code> object that is passed to
 <p>Optimization functions from external packages usually take an
 objective function as an argument. In this case, you can pass
 <code>inst$objective_function</code> which internally calls
-<code>$eval_batch()</code>. Check out <a href="https://github.com/mlr-org/bbotk/blob/master/R/OptimizerGenSA.R"><code>OptimizerGenSA</code></a>
+<code>$eval_batch()</code>. Check out <a href="https://github.com/mlr-org/bbotk/blob/master/R/OptimizerBatchGenSA.R"><code>OptimizerGenSA</code></a>
 for an example.</p>
 </div>
 </div>
@@ -350,15 +350,15 @@ obtains the best performing result from the archive. The default method
 can be overwritten if the new tuner determines the result of the
 optimization in a different way. The new function must call the
 <code>$assign_result()</code> method of the instance to write the final
-result to the instance. See <a href="https://github.com/mlr-org/mlr3tuning/blob/master/R/TunerIrace.R"><code>mlr3tuning::TunerIrace</code></a>
+result to the instance. See <a href="https://github.com/mlr-org/mlr3tuning/blob/master/R/TunerBatchIrace.R"><code>mlr3tuning::TunerIrace</code></a>
 for an implementation of <code>$.assign_result()</code>.</p>
 </div>
 <div id="transform-optimizer-to-tuner" class="section level2">
 <h2>Transform optimizer to tuner</h2>
 <p>This step is only needed if you implement via <code>bbotk</code>. The
-<code>mlr3tuning::TunerFromOptimizer</code> class transforms a
+<code>mlr3tuning::TunerBatchFromOptimizerBatch</code> class transforms a
 <code>Optimizer</code> to a <code>Tuner</code>. Just add the
-<code>Optimizer</code> to the <code>optimizer</code> field. See <a href="https://github.com/mlr-org/mlr3tuning/blob/master/R/TunerRandomSearch.R"><code>mlr3tuning::TunerRandomSearch</code></a>
+<code>Optimizer</code> to the <code>optimizer</code> field. See <a href="https://github.com/mlr-org/mlr3tuning/blob/master/R/TunerBatchRandomSearch.R"><code>mlr3tuning::TunerRandomSearch</code></a>
 for an example.</p>
 </div>
 <div id="add-unit-tests" class="section level2">

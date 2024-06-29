@@ -18,34 +18,48 @@ extract_benchmark_result_learners = function(bmr) {
   }))
 }
 
-evaluate_default = function(inst) {
-  # values are on the learner scale i.e. possible transformation are already applied
-  xss = default_values(inst$objective$learner, inst$search_space, inst$objective$task)
+extract_runtime = function(resample_result) {
+  runtimes = map_dbl(get_private(resample_result)$.data$learner_states(get_private(resample_result)$.view), function(state) {
+    state$train_time + state$predict_time
+  })
+  sum(runtimes)
+}
 
-  # parameters with exp transformation and log inverse transformation
-  # parameters with unknown inverse transformation
-  # parameter set with trafo
-  if ("set_id" %in% names(ps())) {
-    # old paradox
-    has_logscale = map_lgl(inst$search_space$params, function(param) get_private(param)$.has_logscale)
+init_internal_search_space = function(self, private, super, search_space, store_benchmark_result, learner, callbacks, batch) {
+  assert_flag(store_benchmark_result)
+  internal_search_space = NULL
+  internal_tune_ids = keep(names(search_space$tags), map_lgl(search_space$tags, function(t) "internal_tuning" %in% t))
 
-    has_trafo = map_lgl(inst$search_space$params, function(param) get_private(param)$.has_trafo)
+  if (length(internal_tune_ids)) {
+    internal_search_space = search_space$subset(internal_tune_ids)
+    if (internal_search_space$has_trafo) {
+      stopf("Inner Tuning and Parameter Transformations are currently not supported.")
+    }
+    search_space = search_space$subset(setdiff(search_space$ids(), internal_tune_ids))
 
-    has_extra_trafo = get_private(inst$search_space)$.has_extra_trafo
+    # the learner dictates how to interprete the to_tune(..., inner)
+
+    learner$param_set$set_values(
+      .values = learner$param_set$convert_internal_search_space(internal_search_space)
+    )
+
+    # we need to use a callback to change how the Optimizer writes the result to the ArchiveTuning
+    # This is because overwriting the Tuner's .assign_result method has no effect, as it is not called.helper
+    callbacks = c(load_callback_internal_tuning(batch), callbacks)
+  }
+
+  list(
+    search_space = search_space,
+    callbacks = callbacks,
+    internal_search_space = internal_search_space %??% ps()
+  )
+}
+
+init_internal_search_space_archive = function(self, private, super, search_space, internal_search_space) {
+  if (!is.null(internal_search_space)) {
+    private$.internal_search_space = as_search_space(internal_search_space)
+    assert_disjunct(search_space$ids(), internal_search_space$ids())
   } else {
-    has_logscale = map_lgl(inst$search_space$params$.trafo, function(x) identical(x, exp))
-
-    has_trafo = map_lgl(inst$search_space$params$.trafo, function(x) !is.null(x) && !identical(x, exp))
-
-    has_extra_trafo = !is.null(inst$search_space$extra_trafo)
+    private$.internal_search_space = ps()
   }
-
-  if (any(has_trafo) || has_extra_trafo) {
-    stop("Cannot evaluate default hyperparameter values. Search space contains transformation functions with unknown inverse function.")
-  }
-
-  # inverse parameter with exp transformation
-  xdt = as.data.table(map_if(xss, has_logscale, log))
-
-  inst$eval_batch(xdt)
 }
