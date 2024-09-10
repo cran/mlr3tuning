@@ -7,7 +7,7 @@ test_that("TunerAsyncGridSearch works", {
     minsplit  = to_tune(2, 128),
     cp        = to_tune(1e-04, 1e-1))
 
-  rush_plan(n_workers = 2)
+  rush::rush_plan(n_workers = 2)
   instance = ti_async(
     task = tsk("pima"),
     learner = learner,
@@ -21,5 +21,5 @@ test_that("TunerAsyncGridSearch works", {
   expect_data_table(tuner$optimize(instance), nrows = 1)
 
   expect_data_table(instance$archive$data, nrows = 100)
-  expect_rush_reset(instance$rush, type = "terminate")
+  expect_rush_reset(instance$rush, type = "kill")
 })

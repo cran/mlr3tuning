@@ -1,3 +1,8 @@
+# mlr3tuning 1.0.1
+
+* refactor: Replace internal tuning callback.
+* perf: Delete intermediate `BenchmarkResult` in `ObjectiveTuningBatch` after optimization.
+
 # mlr3tuning 1.0.0
 
 * feat: Introduce asynchronous optimization with the `TunerAsync` and `TuningInstanceAsync*` classes.

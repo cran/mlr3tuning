@@ -403,3 +403,66 @@ test_that("assign_result works with no hyperparameter and constant", {
   expect_equal(res$classif.ce, 0.8)
   expect_list(res$learner_param_vals[[1]], len = 0)
 })
+
+test_that("objective contains no benchmark results", {
+  task = tsk("pima")
+  learner = lrn("classif.rpart")
+  resampling = rsmp("holdout")
+  measure = msr("classif.ce")
+  terminator = trm("evals", n_evals = 10)
+
+  instance = ti(task, learner, resampling, measure, terminator)
+  tuner = tnr("random_search", batch_size = 1)
+  tuner$optimize(instance)
+
+  expect_null(instance$objective$.__enclos_env__$private$.benchmark_result)
+})
+
+test_that("dependencies in defaults work", {
+  learner = lrn("classif.rpart", cp = to_tune(0.01, 0.1))
+  learner$param_set$add_dep("cp", "keep_model", CondEqual$new("keep_model" == TRUE))
+
+  expect_class(tune(
+    tuner = tnr("random_search", batch_size = 5),
+    task = tsk("pima"),
+    learner = learner,
+    resampling = rsmp("cv", folds = 3),
+    measures = msr("classif.ce"),
+    terminator = trm("evals", n_evals = 20)), "TuningInstanceBatchSingleCrit")
+
+  expect_error(tune(
+    tuner = tnr("random_search", batch_size = 5),
+    task = tsk("pima"),
+    learner = learner,
+    resampling = rsmp("cv", folds = 3),
+    measures = msr("classif.ce"),
+    terminator = trm("evals", n_evals = 20),
+    check_values = TRUE), regexp = "Assertion on")
+})
+
+# Internal Tuning --------------------------------------------------------------
+
+test_that("Batch single-crit internal tuning works", {
+  learner = lrn("classif.debug",
+    validate = 0.2,
+    early_stopping = TRUE,
+    x = to_tune(0.2, 0.3),
+    iter = to_tune(upper = 1000, internal = TRUE, aggr = function(x) 99))
+
+  instance = ti(
+    task = tsk("pima"),
+    learner = learner,
+    resampling = rsmp("cv", folds = 3),
+    measures = msr("classif.ce"),
+    terminator = trm("evals", n_evals = 20),
+    store_benchmark_result = TRUE
+  )
+
+  tuner = tnr("random_search", batch_size = 2)
+  expect_data_table(tuner$optimize(instance), nrows = 1)
+  expect_list(instance$archive$data$internal_tuned_values, len = 20, types = "list")
+  expect_equal(instance$archive$data$internal_tuned_values[[1]], list(iter = 99))
+  expect_false(instance$result_learner_param_vals$early_stopping)
+  expect_equal(instance$result_learner_param_vals$iter, 99)
+})
+
