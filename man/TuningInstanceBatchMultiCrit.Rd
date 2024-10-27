@@ -123,6 +123,7 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
   measures,
   terminator,
   search_space = NULL,
+  internal_search_space = NULL,
   store_benchmark_result = TRUE,
   store_models = FALSE,
   check_values = FALSE,
@@ -157,6 +158,12 @@ Hyperparameter search space. If \code{NULL} (default), the search space is
 constructed from the \link[paradox:to_tune]{paradox::TuneToken} of the learner's parameter set
 (learner$param_set).}
 
+\item{\code{internal_search_space}}{(\link[paradox:ParamSet]{paradox::ParamSet} or \code{NULL})\cr
+The internal search space.}
+
+\item{\code{internal_search_space}}{(\link[paradox:ParamSet]{paradox::ParamSet} or \code{NULL})\cr
+The internal search space.}
+
 \item{\code{store_benchmark_result}}{(\code{logical(1)})\cr
 If \code{TRUE} (default), store resample result of evaluated hyperparameter
 configurations in archive as \link[mlr3:BenchmarkResult]{mlr3::BenchmarkResult}.}
@@ -189,7 +196,9 @@ For internal use.
   xdt,
   ydt,
   learner_param_vals = NULL,
-  xydt = NULL
+  extra = NULL,
+  xydt = NULL,
+  ...
 )}\if{html}{\out{</div>}}
 }
 
@@ -207,8 +216,14 @@ Optimal outcomes, e.g. the Pareto front.}
 \item{\code{learner_param_vals}}{(List of named \verb{list()s})\cr
 Fixed parameter values of the learner that are neither part of the}
 
+\item{\code{extra}}{(\code{data.table::data.table()})\cr
+Additional information.}
+
 \item{\code{xydt}}{(\code{data.table::data.table()})\cr
-Point, outcome, and additional information.}
+Point, outcome, and additional information (Deprecated).}
+
+\item{\code{...}}{(\code{any})\cr
+ignored.}
 }
 \if{html}{\out{</div>}}
 }
