@@ -24,14 +24,7 @@
 #' A set timeout is disabled while fitting the final model.
 #'
 #' @inheritSection TuningInstanceBatchSingleCrit Default Measures
-#'
-#' @section Resources:
-#' There are several sections about hyperparameter optimization in the [mlr3book](https://mlr3book.mlr-org.com).
-#'
-#'  * [Automate](https://mlr3book.mlr-org.com/chapters/chapter4/hyperparameter_optimization.html#sec-autotuner) the tuning.
-#'  * Estimate the model performance with [nested resampling](https://mlr3book.mlr-org.com/chapters/chapter4/hyperparameter_optimization.html#sec-nested-resampling).
-#'
-#' The [gallery](https://mlr-org.com/gallery-all-optimization.html) features a collection of case studies and demos about optimization.
+#' @inheritSection TuningInstanceBatchSingleCrit Resources
 #'
 #' @section Nested Resampling:
 #' Nested resampling is performed by passing an [AutoTuner] to [mlr3::resample()] or [mlr3::benchmark()].
@@ -53,6 +46,7 @@
 #' @template param_check_values
 #' @template param_callbacks
 #' @template param_rush
+#' @template param_id
 #'
 #' @export
 #' @examples
@@ -144,7 +138,8 @@ AutoTuner = R6Class("AutoTuner",
       store_models = FALSE,
       check_values = FALSE,
       callbacks = NULL,
-      rush = NULL
+      rush = NULL,
+      id = NULL
       ) {
       learner = assert_learner(as_learner(learner, clone = TRUE))
 
@@ -158,7 +153,7 @@ AutoTuner = R6Class("AutoTuner",
       ia$resampling = assert_resampling(resampling)$clone()
       if (!is.null(measure)) ia$measure = assert_measure(as_measure(measure), learner = learner)
       if (!is.null(search_space)) ia$search_space = assert_param_set(as_search_space(search_space))$clone()
-      if (!is.null(internal_search_space)) ia$search_space = assert_param_set(as_search_space(internal_search_space))$clone()
+      if (!is.null(internal_search_space)) ia$internal_search_space = assert_param_set(as_search_space(internal_search_space))$clone()
       ia$terminator = assert_terminator(terminator)$clone()
 
       ia$store_models = assert_flag(store_models)
@@ -170,8 +165,10 @@ AutoTuner = R6Class("AutoTuner",
       if (!is.null(rush)) ia$rush = assert_class(rush, "Rush")
       self$instance_args = ia
 
+      id = assert_string(id, null.ok = TRUE) %??% paste0(learner$id, ".tuned")
+
       super$initialize(
-        id = paste0(learner$id, ".tuned"),
+        id = id,
         task_type = learner$task_type,
         packages = c("mlr3tuning", learner$packages),
         feature_types = learner$feature_types,

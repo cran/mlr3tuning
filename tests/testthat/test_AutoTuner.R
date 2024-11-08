@@ -337,14 +337,16 @@ test_that("AutoTuner hash works #647 in mlr3", {
     resampling = rsmp("holdout"),
     measure = msr("classif.ce"),
     terminator = trm("evals", n_evals = 4),
-    tuner = tnr("grid_search", resolution = 3))
+    tuner = tnr("grid_search", resolution = 3),
+    id = "at_1")
 
   at_2 = AutoTuner$new(
     learner = lrn("classif.rpart", cp = to_tune(0.01, 0.1)),
     resampling = rsmp("holdout"),
     measure = msr("classif.ce"),
     terminator = trm("evals", n_evals = 4),
-    tuner = tnr("grid_search", resolution = 3))
+    tuner = tnr("grid_search", resolution = 3),
+    id = "at_2")
 
   expect_true(at_1$hash != at_2$hash)
 
@@ -657,6 +659,43 @@ test_that("AutoTuner works with internal tuning and validation", {
   # the AutoTuner's validate field controls the validation data for the final model fit,
   # because it was set to NULL, the full data was used for the final model fit
   expect_true(is.null(at$model$learner$state$internal_valid_task_ids))
+})
+
+test_that("AutoTuner works when internal_search_space is passed separately", {
+  task = tsk("iris")
+  search_space = ps(x = p_dbl(0.2, 0.3))
+  internal_search_space = ps(iter = p_int(upper = 1000L, aggr = function(x) length(x)))
+  at = auto_tuner(
+    tuner = tnr("random_search", batch_size = 2),
+    learner = lrn("classif.debug", early_stopping = TRUE, validate = "test"),
+    resampling = rsmp("cv", folds = 3),
+    search_space = search_space,
+    internal_search_space = internal_search_space,
+    measure = msr("classif.ce"),
+    term_evals = 4
+  )
+  at$train(task)
+  expect_equal(at$model$learner$param_set$values$iter, 3)
+  expect_false(at$model$learner$param_set$values$early_stopping)
+})
+
+test_that("AutoTuner works when internal_search_space is part of primary search space", {
+  task = tsk("iris")
+  search_space = ps(
+    x = p_dbl(0.2, 0.3),
+    iter = p_int(upper = 1000L, aggr = function(x) length(x), tags = "internal_tuning")
+    )
+  at = auto_tuner(
+    tuner = tnr("random_search", batch_size = 2),
+    learner = lrn("classif.debug", early_stopping = TRUE, validate = "test"),
+    resampling = rsmp("cv", folds = 3),
+    search_space = search_space,
+    measure = msr("classif.ce"),
+    term_evals = 4
+  )
+  at$train(task)
+  expect_equal(at$model$learner$param_set$values$iter, 3)
+  expect_false(at$model$learner$param_set$values$early_stopping)
 })
 
 test_that("AutoTuner works with set_validate function", {
