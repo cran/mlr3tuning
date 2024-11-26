@@ -68,7 +68,7 @@ TuningInstanceAsyncSingleCrit = R6Class("TuningInstanceAsyncSingleCrit",
       callbacks = assert_async_tuning_callbacks(as_callbacks(callbacks))
 
       # tune token and search space
-      if (!is.null(search_space) && length(learner$param_set$get_values(type = "only_token"))) {
+      if (!is.null(search_space) && length(learner$param_set$get_values(type = "only_token", check_required = FALSE))) {
         stop("If the values of the ParamSet of the Learner contain TuneTokens you cannot supply a search_space.")
       }
 
@@ -164,14 +164,9 @@ TuningInstanceAsyncSingleCrit = R6Class("TuningInstanceAsyncSingleCrit",
     #'
     #' @param y (`numeric(1)`)\cr
     #' Optimal outcome.
-    #' @param xydt (`data.table::data.table()`)\cr
-    #' Point, outcome, and additional information (Deprecated).
     #' @param ... (`any`)\cr
     #' ignored.
-    assign_result = function(xdt, y, learner_param_vals = NULL, extra = NULL, xydt = NULL, ...) {
-      # workaround
-      extra = extra %??% xydt
-
+    assign_result = function(xdt, y, learner_param_vals = NULL, extra = NULL, ...) {
       # assign for callbacks
       private$.result_xdt = xdt
       private$.result_y = y

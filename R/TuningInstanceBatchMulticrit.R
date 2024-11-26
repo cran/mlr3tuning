@@ -87,7 +87,7 @@ TuningInstanceBatchMultiCrit = R6Class("TuningInstanceBatchMultiCrit",
       callbacks = assert_batch_tuning_callbacks(as_callbacks(callbacks))
 
       # tune token and search space
-      if (!is.null(search_space) && length(learner$param_set$get_values(type = "only_token"))) {
+      if (!is.null(search_space) && length(learner$param_set$get_values(type = "only_token", check_required = FALSE))) {
         stop("If the values of the ParamSet of the Learner contain TuneTokens you cannot supply a search_space.")
       }
 
@@ -129,7 +129,7 @@ TuningInstanceBatchMultiCrit = R6Class("TuningInstanceBatchMultiCrit",
 
       # set learner parameter values
       if (search_space_from_tokens) {
-        learner$param_set$values = learner$param_set$get_values(type = "without_token")
+        learner$param_set$values = learner$param_set$get_values(type = "without_token", check_required = TRUE)
       }
 
       if (!is.null(self$internal_search_space) && self$internal_search_space$has_trafo) {
@@ -182,14 +182,9 @@ TuningInstanceBatchMultiCrit = R6Class("TuningInstanceBatchMultiCrit",
     #'
     #' @param ydt (`data.table::data.table()`)\cr
     #' Optimal outcomes, e.g. the Pareto front.
-    #' @param xydt (`data.table::data.table()`)\cr
-    #' Point, outcome, and additional information (Deprecated).
     #' @param ... (`any`)\cr
     #' ignored.
-    assign_result = function(xdt, ydt, learner_param_vals = NULL, extra = NULL, xydt = NULL, ...) {
-      # workaround
-      extra = extra %??% xydt
-
+    assign_result = function(xdt, ydt, learner_param_vals = NULL, extra = NULL, ...) {
       # assign for callbacks
       private$.result_xdt = xdt
       private$.result_ydt = ydt

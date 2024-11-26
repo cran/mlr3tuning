@@ -1,3 +1,7 @@
+# mlr3tuning 1.2.1
+
+* refactor: Only pass `extra` to `$assign_result()`.
+
 # mlr3tuning 1.2.0
 
 * feat: Add new callback `clbk("mlr3tuning.one_se_rule")` that selects the the hyperparameter configuration with the smallest feature set within one standard error of the best.
