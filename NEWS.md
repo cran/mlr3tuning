@@ -1,3 +1,8 @@
+# mlr3tuning 1.3.0
+
+* feat: Save `ArchiveAsyncTuning` to a `data.table` with `ArchiveAsyncTuningFrozen`.
+* perf: Save models on worker only when requested in `ObjectiveTuningAsync`.
+
 # mlr3tuning 1.2.1
 
 * refactor: Only pass `extra` to `$assign_result()`.
@@ -9,6 +14,7 @@
 * refactor: Rename stage `on_result` to `on_result_end` in `CallbackAsyncTuning` and `CallbackBatchTuning`.
 * docs: Extend the `CallbackAsyncTuning` and `CallbackBatchTuning` documentation.
 * compatibility: mlr3 0.22.0
+* compatibility: Work with new irace 4.0.0
 
 # mlr3tuning 1.1.0
 
