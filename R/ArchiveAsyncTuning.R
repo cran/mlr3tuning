@@ -142,7 +142,7 @@ ArchiveAsyncTuning = R6Class("ArchiveAsyncTuning",
     #'
     #' @param ... (ignored).
     print = function() {
-      catf("%s with %i evaluations", format(self), self$n_evals)
+      cat_cli(cli_h1("{format(self)} with {.val {self$n_evals}} evaluations"))
       print(as.data.table(self, unnest = NULL, exclude_columns = c(
         "x_domain",
         "timestamp_xs",
@@ -170,8 +170,7 @@ ArchiveAsyncTuning = R6Class("ArchiveAsyncTuning",
       # cache benchmark result
       if (self$rush$n_finished_tasks > private$.benchmark_result$n_resample_results) {
         bmrs = map(self$finished_data$resample_result, as_benchmark_result)
-        init = BenchmarkResult$new()
-        private$.benchmark_result = Reduce(function(lhs, rhs) lhs$combine(rhs), bmrs, init = init)
+        private$.benchmark_result = Reduce(function(lhs, rhs) lhs$combine(rhs), bmrs)
       }
       private$.benchmark_result
     }

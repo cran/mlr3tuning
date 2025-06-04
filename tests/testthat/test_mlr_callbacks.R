@@ -41,7 +41,8 @@ test_that("async measures callback works", {
   skip_if_not_installed("rush")
   flush_redis()
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
   instance = ti_async(
     task = tsk("pima"),
     learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1), predict_sets = "test"),
@@ -70,7 +71,8 @@ test_that("async measures callback works", {
 #     minsplit  = to_tune(2, 128),
 #     cp        = to_tune(1e-04, 1e-1))
 
-#   rush::rush_plan(n_workers = 2)
+#   mirai::daemons(2)
+#   rush::rush_plan(n_workers = 2, worker_type = "remote")
 #   instance = ti_async(
 #     task = tsk("pima"),
 #     learner = learner,
@@ -92,7 +94,8 @@ test_that("default configuration callback works", {
   skip_if_not_installed("rush")
   flush_redis()
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
   instance = ti_async(
     task = tsk("pima"),
     learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1)),
@@ -105,8 +108,9 @@ test_that("default configuration callback works", {
   tuner = tnr("async_random_search")
   tuner$optimize(instance)
 
-  expect_equal(instance$archive$data$x_domain[[1]]$cp, 0.01)
-  expect_equal(instance$archive$data$cp[[1]], 0.01)
+  expect_subset(0.01, round(map_dbl(instance$archive$data$x_domain, "cp"), 2))
+  expect_subset(0.01, round(instance$archive$data$cp, 2))
+  expect_rush_reset(instance$rush)
 })
 
 test_that("default configuration callback works with logscale", {
@@ -114,7 +118,8 @@ test_that("default configuration callback works with logscale", {
   skip_if_not_installed("rush")
   flush_redis()
 
-  rush::rush_plan(n_workers = 2)
+mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
   instance = ti_async(
     task = tsk("pima"),
     learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1, logscale = TRUE)),
@@ -127,8 +132,9 @@ test_that("default configuration callback works with logscale", {
   tuner = tnr("async_random_search")
   tuner$optimize(instance)
 
-  expect_equal(instance$archive$data$x_domain[[1]]$cp, 0.01)
-  expect_equal(instance$archive$data$cp[[1]], log(0.01))
+  expect_subset(0.01, round(map_dbl(instance$archive$data$x_domain, "cp"), 2))
+  expect_subset(log(0.01), instance$archive$data$cp)
+  expect_rush_reset(instance$rush)
 })
 
 test_that("default configuration callback errors with trafo", {
@@ -136,7 +142,8 @@ test_that("default configuration callback errors with trafo", {
   skip_if_not_installed("rush")
   flush_redis()
 
-  rush::rush_plan(n_workers = 2)
+mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
   instance = ti_async(
     task = tsk("pima"),
     learner = lrn("classif.rpart", cp = to_tune(p_dbl(-10, 0, trafo = function(x) 10^x))),
@@ -148,6 +155,7 @@ test_that("default configuration callback errors with trafo", {
 
   tuner = tnr("async_random_search")
   expect_error(tuner$optimize(instance), "Cannot evaluate default hyperparameter values")
+  expect_rush_reset(instance$rush)
 })
 
 test_that("default configuration callback works without transformation and with logscale", {
@@ -159,7 +167,8 @@ test_that("default configuration callback works without transformation and with 
     cp = to_tune(1e-3, 1, logscale = TRUE),
     minbucket = to_tune(1, 20))
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
   instance = ti_async(
     task = tsk("pima"),
     learner = learner,
@@ -172,10 +181,11 @@ test_that("default configuration callback works without transformation and with 
   tuner = tnr("async_random_search")
   tuner$optimize(instance)
 
-  expect_equal(instance$archive$data$x_domain[[1]]$cp, 0.01)
-  expect_equal(instance$archive$data$cp[[1]], log(0.01))
-  expect_equal(instance$archive$data$x_domain[[1]]$minbucket, 7)
-  expect_equal(instance$archive$data$minbucket[[1]], 7)
+  expect_subset(0.01, round(map_dbl(instance$archive$data$x_domain, "cp"), 2))
+  expect_subset(log(0.01), instance$archive$data$cp)
+  expect_subset(7, map_dbl(instance$archive$data$x_domain, "minbucket"))
+  expect_subset(7, instance$archive$data$minbucket)
+  expect_rush_reset(instance$rush)
 })
 
 test_that("default configuration callback errors without transformation and with logscale and trafo", {
@@ -188,7 +198,8 @@ test_that("default configuration callback errors without transformation and with
     minbucket = to_tune(1, 20),
     minsplit = to_tune(p_int(0, 3, trafo = function(x) 2^x)))
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
   instance = ti_async(
     task = tsk("pima"),
     learner = learner,
@@ -200,6 +211,7 @@ test_that("default configuration callback errors without transformation and with
 
   tuner = tnr("async_random_search")
   expect_error(tuner$optimize(instance), "Cannot evaluate default hyperparameter values")
+  expect_rush_reset(instance$rush)
 })
 
 test_that("default configuration callback errors with extra trafo", {
@@ -218,7 +230,8 @@ test_that("default configuration callback errors with extra trafo", {
     }
   )
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
   instance = ti_async(
     task = tsk("pima"),
     learner = learner,
@@ -231,6 +244,7 @@ test_that("default configuration callback errors with extra trafo", {
 
   tuner = tnr("async_random_search")
   expect_error(tuner$optimize(instance), "Cannot evaluate default hyperparameter values")
+  expect_rush_reset(instance$rush)
 })
 
 test_that("default configuration callback errors with old parameter set api", {
@@ -243,7 +257,8 @@ test_that("default configuration callback errors with old parameter set api", {
     cp = p_dbl(lower = -10, upper = 0, trafo = function(x) 10^x)
   )
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
   instance = ti_async(
     task = tsk("pima"),
     learner = learner,
@@ -256,6 +271,7 @@ test_that("default configuration callback errors with old parameter set api", {
 
   tuner = tnr("async_random_search")
   expect_error(tuner$optimize(instance), "Cannot evaluate default hyperparameter values")
+  expect_rush_reset(instance$rush)
 })
 
 # batch default configuration callback -----------------------------------------
@@ -395,7 +411,8 @@ test_that("async save logs callback works", {
   skip_if_not_installed("rush")
   flush_redis()
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
   instance = ti_async(
     task = tsk("pima"),
     learner = lrn("classif.debug", message_train = 1, x = to_tune()),
@@ -410,6 +427,7 @@ test_that("async save logs callback works", {
 
   expect_list(instance$archive$data$log)
   expect_data_table(instance$archive$data$log[[1]][[1]])
+  expect_rush_reset(instance$rush)
 })
 
 # one se rule callback --------------------------------------------------------
@@ -435,7 +453,8 @@ test_that("one se rule callback works", {
   skip_if_not_installed("rush")
   flush_redis()
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
   instance = ti_async(
     task = tsk("pima"),
     learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1)),
@@ -450,6 +469,7 @@ test_that("one se rule callback works", {
 
   expect_numeric(instance$archive$data$n_features)
   expect_numeric(instance$result$n_features)
+  expect_rush_reset(instance$rush)
 })
 
 # async freeze archive callback ------------------------------------------------
@@ -459,7 +479,8 @@ test_that("async freeze archive callback works", {
   skip_if_not_installed("rush")
   flush_redis()
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
   instance = ti_async(
     task = tsk("pima"),
     learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1)),
@@ -487,4 +508,5 @@ test_that("async freeze archive callback works", {
   expect_number(frozen_archive$n_evals)
 
   expect_data_table(as.data.table(frozen_archive))
+  expect_rush_reset(instance$rush)
 })

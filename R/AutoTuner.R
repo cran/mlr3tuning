@@ -39,7 +39,6 @@
 #' @template param_measure
 #' @template param_terminator
 #' @template param_search_space
-#' @template param_internal_search_space
 #' @template param_store_tuning_instance
 #' @template param_store_benchmark_result
 #' @template param_store_models
@@ -132,7 +131,6 @@ AutoTuner = R6Class("AutoTuner",
       measure = NULL,
       terminator,
       search_space = NULL,
-      internal_search_space = NULL,
       store_tuning_instance = TRUE,
       store_benchmark_result = TRUE,
       store_models = FALSE,
@@ -147,13 +145,13 @@ AutoTuner = R6Class("AutoTuner",
         stop("If the values of the ParamSet of the Learner contain TuneTokens you cannot supply a search_space.")
       }
 
+
       ia = list()
       self$tuner = assert_tuner(tuner)
       ia$learner = learner
       ia$resampling = assert_resampling(resampling)$clone()
       if (!is.null(measure)) ia$measure = assert_measure(as_measure(measure), learner = learner)
-      if (!is.null(search_space)) ia$search_space = assert_param_set(as_search_space(search_space))$clone()
-      if (!is.null(internal_search_space)) ia$internal_search_space = assert_param_set(as_search_space(internal_search_space))$clone()
+      if (!is.null(search_space)) ia$search_space = as_search_space(search_space)
       ia$terminator = assert_terminator(terminator)$clone()
 
       ia$store_models = assert_flag(store_models)
@@ -260,7 +258,7 @@ AutoTuner = R6Class("AutoTuner",
       } else {
         self$instance_args$search_space
       }
-      catf("* Search Space:")
+      cat_cli(cli_li("Search Space:"))
       print(as.data.table(search_space)[, c("id", "class", "lower", "upper", "nlevels"), with = FALSE])
     },
 
@@ -314,6 +312,8 @@ AutoTuner = R6Class("AutoTuner",
     #' @field predict_type (`character(1)`)\cr
     #' Stores the currently active predict type, e.g. `"response"`.
     #' Must be an element of `$predict_types`.
+    #' A few learners already use the predict type during training.
+    #' So there is no guarantee that changing the predict type after tuning and training will have any effect or does not lead to errors.
     predict_type = function(rhs) {
       if (missing(rhs)) {
         return(private$.predict_type)
@@ -322,10 +322,12 @@ AutoTuner = R6Class("AutoTuner",
         stopf("Learner '%s' does not support predict type '%s'", self$id, rhs)
       }
 
-      # Catches 'Error: Field/Binding is read-only' bug
-      tryCatch({
+      self$instance_args$learner$predict_type = rhs
+
+
+      if (!is.null(self$model)) {
         self$model$learner$predict_type = rhs
-      }, error = function(cond){})
+      }
 
       private$.predict_type = rhs
     },

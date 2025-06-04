@@ -3,7 +3,9 @@ test_that("ArchiveAsyncTuning access methods work", {
   skip_if_not_installed("rush")
   flush_redis()
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
+
   instance = ti_async(
     task = tsk("pima"),
     learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1)),
@@ -12,6 +14,9 @@ test_that("ArchiveAsyncTuning access methods work", {
     terminator = trm("evals", n_evals = 20),
     store_benchmark_result = TRUE
   )
+
+  expect_benchmark_result(instance$archive$benchmark_result)
+
   tuner = tnr("async_random_search")
   tuner$optimize(instance)
 
@@ -56,7 +61,9 @@ test_that("ArchiveAsyncTuning as.data.table function works", {
   skip_if_not_installed("rush")
   flush_redis()
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
+
   instance = ti_async(
     task = tsk("pima"),
     learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1)),
@@ -111,7 +118,9 @@ test_that("ArchiveAsyncTuning as.data.table function works without resample resu
   skip_if_not_installed("rush")
   flush_redis()
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
+
   instance = ti_async(
     task = tsk("pima"),
     learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1)),
@@ -135,7 +144,9 @@ test_that("ArchiveAsyncTuning as.data.table function works with empty archive", 
   skip_if_not_installed("rush")
   flush_redis()
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
+
   instance = ti_async(
     task = tsk("pima"),
     learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1)),
@@ -167,7 +178,9 @@ test_that("ArchiveAsyncTuning as.data.table function works with new ids in x_dom
     }
   )
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
+
   instance = ti_async(
     task = tsk("pima"),
     learner = lrn("classif.rpart"),
@@ -206,7 +219,9 @@ test_that("ArchiveAsyncTuning as.data.table function works with switched new ids
     }
   )
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
+
   instance = ti_async(
     task = tsk("pima"),
     learner = lrn("classif.rpart"),
@@ -235,7 +250,8 @@ test_that("Saving ArchiveAsyncTuning works", {
     file.remove("instance.rds")
   })
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
   instance = ti_async(
     task = tsk("pima"),
     learner = lrn("classif.rpart", cp = to_tune(1e-04, 1e-1)),
@@ -252,7 +268,8 @@ test_that("Saving ArchiveAsyncTuning works", {
   loaded_instance = readRDS(file = "instance.rds")
 
   loaded_instance$reconnect()
-  loaded_instance
+  expect_class(loaded_instance, "TuningInstanceAsyncSingleCrit")
+  expect_rush_reset(instance$rush)
 })
 
 # Internal Tuning --------------------------------------------------------------
@@ -262,7 +279,9 @@ test_that("ArchiveAsyncTuning as.data.table function works internally tuned valu
   skip_if_not_installed("rush")
   flush_redis()
 
-  rush::rush_plan(n_workers = 2)
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
+
   instance = ti_async(
     task = tsk("pima"),
     learner = lrn("classif.debug", validate = 0.2, early_stopping = TRUE, iter = to_tune(upper = 1000, internal = TRUE, aggr = function(x) 99),
@@ -277,10 +296,11 @@ test_that("ArchiveAsyncTuning as.data.table function works internally tuned valu
 
   tab = as.data.table(instance$archive, unnest = "x_domain")
   expect_list(tab$internal_tuned_values, min.len = 2, types = "list")
-  expect_equal(tab$internal_tuned_values[[1]], list(iter = 99L))
+  expect_equal(tab$internal_tuned_values[[1]], set_class(list(iter = 99L), "internal_tuned_values"))
 
   tab = as.data.table(instance$archive)
   expect_names(names(tab), must.include = "internal_tuned_values_iter")
   expect_equal(tab$internal_tuned_values_iter[1], 99)
+  expect_rush_reset(instance$rush)
 })
 

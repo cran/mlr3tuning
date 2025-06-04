@@ -263,7 +263,7 @@ test_that("ArchiveTuning as.data.table function works", {
 
 # Internal Tuning --------------------------------------------------------------
 
-test_that("ArchiveBatchTuning as.data.table function works internally tuned values", {
+test_that("ArchiveBatchTuning as.data.table function works for internally tuned values", {
   instance = ti(
     task = tsk("pima"),
     learner = lrn("classif.debug", validate = 0.2, early_stopping = TRUE, iter = to_tune(upper = 1000, internal = TRUE, aggr = function(x) 99),
@@ -278,7 +278,7 @@ test_that("ArchiveBatchTuning as.data.table function works internally tuned valu
 
   tab = as.data.table(instance$archive, unnest = "x_domain")
   expect_list(tab$internal_tuned_values, min.len = 2, types = "list")
-  expect_equal(tab$internal_tuned_values[[1]], list(iter = 99L))
+  expect_equal(tab$internal_tuned_values[[1]], set_class(list(iter = 99L), "internal_tuned_values"))
 
   tab = as.data.table(instance$archive)
   expect_names(names(tab), must.include = "internal_tuned_values_iter")

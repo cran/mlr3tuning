@@ -458,7 +458,7 @@ test_that("Batch single-crit internal tuning works", {
   tuner = tnr("random_search", batch_size = 2)
   expect_data_table(tuner$optimize(instance), nrows = 1)
   expect_list(instance$archive$data$internal_tuned_values, len = 20, types = "list")
-  expect_equal(instance$archive$data$internal_tuned_values[[1]], list(iter = 99))
+  expect_equal(instance$archive$data$internal_tuned_values[[1]], set_class(list(iter = 99L), "internal_tuned_values"))
   expect_false(instance$result_learner_param_vals$early_stopping)
   expect_equal(instance$result_learner_param_vals$iter, 99)
 })
@@ -471,27 +471,10 @@ test_that("required parameter can be tuned internally without having a value set
 
   learner$param_set$set_values(
     early_stopping = TRUE,
-    iter = NULL
+    iter = to_tune(upper = 1000, internal = TRUE)
   )
   learner$validate = "test"
 
-  internal_search_space = ps(
-    iter = p_int(upper = 1000, aggr = function(x) as.integer(mean(unlist(x))))
-  )
-
-
-  expect_error(tune(
-    task = tsk("iris"),
-    tuner = tnr("internal"),
-    learner = learner,
-    internal_search_space = internal_search_space,
-    resampling = rsmp("holdout"),
-    store_benchmark_result = TRUE
-  ), regexp = NA)
-
-  learner$param_set$set_values(
-    iter = to_tune(upper = 1000, internal = TRUE)
-  )
   expect_error(tune(
     task = tsk("iris"),
     tuner = tnr("internal"),

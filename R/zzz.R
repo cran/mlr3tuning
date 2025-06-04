@@ -1,5 +1,6 @@
 #' @import data.table
 #' @import checkmate
+#' @import cli
 #' @import paradox
 #' @import mlr3
 #' @import mlr3misc
@@ -27,7 +28,7 @@
   x$add("mlr3tuning.measures", load_callback_measures)
   x$add("mlr3tuning.one_se_rule", load_callback_one_se_rule)
 
-  assign("lg", lgr::get_logger("bbotk"), envir = parent.env(environment()))
+  assign("lg", lgr::get_logger("mlr3/bbotk"), envir = parent.env(environment()))
   if (Sys.getenv("IN_PKGDOWN") == "true") {
     lg$set_threshold("warn")
   }
