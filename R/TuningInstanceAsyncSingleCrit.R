@@ -84,12 +84,6 @@ TuningInstanceAsyncSingleCrit = R6Class("TuningInstanceAsyncSingleCrit",
       search_space = search_spaces$search_space
       self$internal_search_space = search_spaces$internal_search_space
 
-      if (!is.null(self$internal_search_space) && self$internal_search_space$has_trafo) {
-        stopf("Internal tuning and parameter transformations are currently not supported.
-          If you manually provided a search space that has a trafo and parameters tagged with 'internal_tuning',
-          please pass the latter separately via the argument `internal_search_space`.")
-      }
-
       # set internal search space
       if (!is.null(self$internal_search_space)) {
         # the learner dictates how to interpret the to_tune(..., inner)
@@ -161,7 +155,7 @@ TuningInstanceAsyncSingleCrit = R6Class("TuningInstanceAsyncSingleCrit",
 
       # learner param values
       if (is.null(private$.result_learner_param_vals)) {
-        private$.result_learner_param_vals = self$objective$learner$param_set$values
+        private$.result_learner_param_vals = self$objective$default_values
       }
       opt_x = unlist(transform_xdt_to_xss(private$.result_xdt, self$search_space), recursive = FALSE)
       private$.result_learner_param_vals = insert_named(private$.result_learner_param_vals, opt_x)
@@ -203,3 +197,47 @@ TuningInstanceAsyncSingleCrit = R6Class("TuningInstanceAsyncSingleCrit",
     }
   )
 )
+
+#' @export
+tiny_logging.TuningInstanceAsyncSingleCrit = function(instance, optimizer) {
+  new_results = instance$rush$fetch_new_tasks()
+
+  if (nrow(new_results)) {
+    task_keys = instance$rush$tasks
+    ids = which(task_keys %in% new_results$keys)
+    best = instance$archive$best()
+    best_ids = which(task_keys %in% best$keys)
+
+    cns = intersect(c(instance$archive$cols_y, instance$archive$cols_x, "runtime_learners", "warnings", "errors"), colnames(new_results))
+
+    # unnest internal_tuned_values
+    if ("internal_tuned_values" %in% colnames(new_results)) {
+      cns = c(cns, names(new_results$internal_tuned_values[[1]]))
+      new_results = unnest(new_results, "internal_tuned_values")
+    }
+
+    for (i in seq_row(new_results)) {
+      lg$info("Evaluation %i: %s (Current best %s: %s)",
+        ids[i],
+        as_short_string(keep(as.list(new_results[i, cns, with = FALSE]), function(x) !is.na(x))),
+        as_short_string(best_ids),
+        as_short_string(keep(as.list(best[, instance$archive$cols_y, with = FALSE]), function(x) !is.na(x)))
+      )
+    }
+  }
+}
+
+#' @export
+tiny_result.TuningInstanceAsyncSingleCrit = function(instance, optimizer) {
+  result = copy(instance$result)
+  cns = c(instance$archive$cols_y, instance$archive$cols_x)
+
+  if ("internal_tuned_values" %in% colnames(result)) {
+    cns = c(cns, names(result$internal_tuned_values[[1]]))
+    result = unnest(result, "internal_tuned_values")
+  }
+
+  for (i in seq_row(instance$result)) {
+    lg$info(as_short_string(keep(as.list(result[i, cns, with = FALSE]), function(x) !is.na(x))))
+  }
+}

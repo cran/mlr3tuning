@@ -1,6 +1,6 @@
 Package: mlr3tuning
 Title: Hyperparameter Optimization for 'mlr3'
-Version: 1.4.0
+Version: 1.5.0
 Authors@R: c(
     person("Marc", "Becker", , "marcbecker@posteo.de", role = c("cre", "aut"),
            comment = c(ORCID = "0000-0002-8115-0400")),
@@ -25,18 +25,19 @@ License: LGPL-3
 URL: https://mlr3tuning.mlr-org.com,
         https://github.com/mlr-org/mlr3tuning
 BugReports: https://github.com/mlr-org/mlr3tuning/issues
-Depends: mlr3 (>= 0.23.0), paradox (>= 1.0.1), R (>= 3.1.0)
-Imports: bbotk (>= 1.6.0), checkmate (>= 2.0.0), cli, data.table, lgr,
+Depends: mlr3 (>= 0.23.0), paradox (>= 1.0.1), R (>= 3.3.0)
+Imports: bbotk (>= 1.8.0), checkmate (>= 2.0.0), cli, data.table, lgr,
         mlr3misc (>= 0.15.1), R6
 Suggests: adagio, future, GenSA, irace (>= 4.1.0), knitr, mirai,
         mlflow, mlr3learners (>= 0.7.0), mlr3pipelines (>= 0.5.2),
-        nloptr, rush, rmarkdown, rpart, testthat (>= 3.0.0), xgboost
+        nloptr, rush (>= 0.4.1), rmarkdown, rpart, testthat (>= 3.0.0),
+        xgboost
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Config/testthat/parallel: false
 Encoding: UTF-8
 NeedsCompilation: no
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Collate: 'ArchiveAsyncTuning.R' 'ArchiveAsyncTuningFrozen.R'
         'ArchiveBatchTuning.R' 'AutoTuner.R' 'CallbackAsyncTuning.R'
         'CallbackBatchTuning.R' 'ContextAsyncTuning.R'
@@ -58,7 +59,7 @@ Collate: 'ArchiveAsyncTuning.R' 'ArchiveAsyncTuningFrozen.R'
         'extract_inner_tuning_archives.R'
         'extract_inner_tuning_results.R' 'helper.R' 'mlr_callbacks.R'
         'reexport.R' 'sugar.R' 'tune.R' 'tune_nested.R' 'zzz.R'
-Packaged: 2025-06-04 10:36:19 UTC; marc
+Packaged: 2025-11-07 11:58:14 UTC; marc
 Author: Marc Becker [cre, aut] (ORCID: <https://orcid.org/0000-0002-8115-0400>),
   Michel Lang [aut] (ORCID: <https://orcid.org/0000-0001-9754-0393>),
   Jakob Richter [aut] (ORCID: <https://orcid.org/0000-0003-4481-5554>),
@@ -66,4 +67,4 @@ Author: Marc Becker [cre, aut] (ORCID: <https://orcid.org/0000-0002-8115-0400>),
   Daniel Schalk [aut] (ORCID: <https://orcid.org/0000-0003-0950-1947>)
 Maintainer: Marc Becker <marcbecker@posteo.de>
 Repository: CRAN
-Date/Publication: 2025-06-04 11:10:02 UTC
+Date/Publication: 2025-11-07 12:40:09 UTC

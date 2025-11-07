@@ -2,6 +2,7 @@ test_that("initializing TuningInstanceAsyncSingleCrit works", {
   skip_on_cran()
   skip_if_not_installed("rush")
   flush_redis()
+  on.exit({mirai::daemons(0)})
 
   mirai::daemons(2)
   rush::rush_plan(n_workers = 2, worker_type = "remote")
@@ -29,6 +30,7 @@ test_that("rush controller can be passed to TuningInstanceAsyncSingleCrit", {
   skip_on_cran()
   skip_if_not_installed("rush")
   flush_redis()
+  on.exit({mirai::daemons(0)})
 
   mirai::daemons(2)
   rush::rush_plan(n_workers = 2, worker_type = "remote")
@@ -55,6 +57,7 @@ test_that("TuningInstanceAsyncSingleCrit can be passed to a tuner", {
   skip_on_cran()
   skip_if_not_installed("rush")
   flush_redis()
+  on.exit({mirai::daemons(0)})
 
   mirai::daemons(2)
   rush::rush_plan(n_workers = 2, worker_type = "remote")
@@ -78,6 +81,7 @@ test_that("assigning a result to TuningInstanceAsyncSingleCrit works", {
   skip_on_cran()
   skip_if_not_installed("rush")
   flush_redis()
+  on.exit({mirai::daemons(0)})
 
   mirai::daemons(2)
   rush::rush_plan(n_workers = 2, worker_type = "remote")
@@ -102,6 +106,7 @@ test_that("saving the benchmark result with TuningInstanceRushSingleCrit works",
   skip_on_cran()
   skip_if_not_installed("rush")
   flush_redis()
+  on.exit({mirai::daemons(0)})
 
   mirai::daemons(2)
   rush::rush_plan(n_workers = 2, worker_type = "remote")
@@ -129,6 +134,7 @@ test_that("saving the models with TuningInstanceRushSingleCrit works", {
   skip_on_cran()
   skip_if_not_installed("rush")
   flush_redis()
+  on.exit({mirai::daemons(0)})
 
   mirai::daemons(2)
   rush::rush_plan(n_workers = 2, worker_type = "remote")
@@ -183,6 +189,7 @@ test_that("Multi-crit internal tuning works", {
   skip_on_cran()
   skip_if_not_installed("rush")
   flush_redis()
+  on.exit({mirai::daemons(0)})
 
   learner = lrn("classif.debug",
     iter = to_tune(upper = 1000L, internal = TRUE, aggr = function(x) as.integer(ceiling(mean(unlist(x))) + 2000L)),
@@ -222,4 +229,58 @@ test_that("Multi-crit internal tuning works", {
   )
 
   expect_rush_reset(instance$rush, type = "kill")
+})
+
+
+test_that("tiny logging works", {
+  skip_on_cran()
+  skip_if_not_installed("rush")
+  flush_redis()
+
+  old_opts = options(bbotk.tiny_logging = TRUE)
+  on.exit(options(old_opts))
+
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
+
+  instance = ti_async(
+    task = tsk("pima"),
+    learner = lrn("classif.rpart", cp = to_tune(0.01, 0.1)),
+    resampling = rsmp("cv", folds = 3),
+    measures = msrs(c("classif.ce", "classif.acc")),
+    terminator = trm("evals", n_evals = 3)
+  )
+
+  optimizer = tnr("async_random_search")
+  expect_data_table(optimizer$optimize(instance))
+
+  expect_rush_reset(instance$rush)
+})
+
+test_that("tiny logging work with internal tuning", {
+  skip_on_cran()
+  skip_if_not_installed("rush")
+  flush_redis()
+
+  old_opts = options(bbotk.tiny_logging = TRUE)
+  on.exit(options(old_opts))
+
+  mirai::daemons(2)
+  rush::rush_plan(n_workers = 2, worker_type = "remote")
+
+  learner = lrn("classif.debug", validate = 0.2, early_stopping = TRUE, x = to_tune(0.2, 0.3),
+    iter = to_tune(upper = 1000, internal = TRUE, aggr = function(x) 99))
+
+  instance = ti_async(
+    task = tsk("pima"),
+    learner = learner,
+    resampling = rsmp("cv", folds = 3),
+    measures = msrs(c("classif.ce", "classif.acc")),
+    terminator = trm("evals", n_evals = 3)
+  )
+
+  optimizer = tnr("async_random_search")
+  expect_data_table(optimizer$optimize(instance))
+
+  expect_rush_reset(instance$rush)
 })
