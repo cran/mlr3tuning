@@ -17,6 +17,20 @@ Before a batch is evaluated, the \link[bbotk:Terminator]{bbotk::Terminator} is q
 If the available budget is exhausted, an exception is raised, and no further evaluations can be performed from this point on.
 The tuner is also supposed to store its final result, consisting of a selected hyperparameter configuration and associated estimated performance values, by calling the method \code{instance$assign_result}.
 }
+\section{Search Space}{
+
+
+The search space defines the hyperparameters to be tuned and their possible values.
+It can be specified in two ways:
+\enumerate{
+\item Tune tokens: Set \code{to_tune()} tokens in the learner's parameter set and leave \code{search_space = NULL} (default).
+The search space is automatically constructed from the tune tokens.
+Dependencies are automatically handled.
+\item Explicit search space: Pass a \link[paradox:ParamSet]{paradox::ParamSet} to the \code{search_space} argument.
+For search spaces with dependencies, use the \code{depends} argument in \verb{p_*()}.
+}
+}
+
 \section{Resources}{
 
 There are several sections about hyperparameter optimization in the \href{https://mlr3book.mlr-org.com}{mlr3book}.
@@ -88,7 +102,7 @@ instance$result
 as.data.table(instance$archive)
 }
 \section{Super classes}{
-\code{\link[bbotk:OptimInstance]{bbotk::OptimInstance}} -> \code{\link[bbotk:OptimInstanceBatch]{bbotk::OptimInstanceBatch}} -> \code{\link[bbotk:OptimInstanceBatchMultiCrit]{bbotk::OptimInstanceBatchMultiCrit}} -> \code{TuningInstanceBatchMultiCrit}
+\code{\link[bbotk:EvalInstance]{bbotk::EvalInstance}} -> \code{\link[bbotk:OptimInstance]{bbotk::OptimInstance}} -> \code{\link[bbotk:OptimInstanceBatch]{bbotk::OptimInstanceBatch}} -> \code{\link[bbotk:OptimInstanceBatchMultiCrit]{bbotk::OptimInstanceBatchMultiCrit}} -> \code{TuningInstanceBatchMultiCrit}
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -117,8 +131,8 @@ List of param values for the optimal learner call.}
 \if{html}{\out{
 <details open><summary>Inherited methods</summary>
 <ul>
+<li><span class="pkg-link" data-pkg="bbotk" data-topic="EvalInstance" data-id="format"><a href='../../bbotk/html/EvalInstance.html#method-EvalInstance-format'><code>bbotk::EvalInstance$format()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="bbotk" data-topic="OptimInstance" data-id="clear"><a href='../../bbotk/html/OptimInstance.html#method-OptimInstance-clear'><code>bbotk::OptimInstance$clear()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="bbotk" data-topic="OptimInstance" data-id="format"><a href='../../bbotk/html/OptimInstance.html#method-OptimInstance-format'><code>bbotk::OptimInstance$format()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="bbotk" data-topic="OptimInstance" data-id="print"><a href='../../bbotk/html/OptimInstance.html#method-OptimInstance-print'><code>bbotk::OptimInstance$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="bbotk" data-topic="OptimInstanceBatch" data-id="eval_batch"><a href='../../bbotk/html/OptimInstanceBatch.html#method-OptimInstanceBatch-eval_batch'><code>bbotk::OptimInstanceBatch$eval_batch()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="bbotk" data-topic="OptimInstanceBatch" data-id="objective_function"><a href='../../bbotk/html/OptimInstanceBatch.html#method-OptimInstanceBatch-objective_function'><code>bbotk::OptimInstanceBatch$objective_function()</code></a></span></li>
@@ -168,9 +182,9 @@ Measures to optimize.}
 Stop criterion of the tuning process.}
 
 \item{\code{search_space}}{(\link[paradox:ParamSet]{paradox::ParamSet})\cr
-Hyperparameter search space. If \code{NULL} (default), the search space is
-constructed from the \link[paradox:to_tune]{paradox::TuneToken} of the learner's parameter set
-(learner$param_set).}
+Hyperparameter search space.
+If \code{NULL} (default), the search space is constructed from the \link[paradox:to_tune]{paradox::TuneToken} of the learner's parameter set (learner$param_set).
+When using \code{to_tune()} tokens, dependencies for hierarchical search spaces are automatically handled.}
 
 \item{\code{store_benchmark_result}}{(\code{logical(1)})\cr
 If \code{TRUE} (default), store resample result of evaluated hyperparameter
@@ -221,7 +235,8 @@ columns for extra information.}
 Optimal outcomes, e.g. the Pareto front.}
 
 \item{\code{learner_param_vals}}{(List of named \verb{list()s})\cr
-Fixed parameter values of the learner that are neither part of the}
+Fixed parameter values of the learner that are neither part of the
+search space nor the domain.}
 
 \item{\code{extra}}{(\code{data.table::data.table()})\cr
 Additional information.}

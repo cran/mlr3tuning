@@ -11,7 +11,7 @@ The \link{ArchiveBatchTuning} is a container around a \code{\link[data.table:dat
 Each row corresponds to a single evaluation of a hyperparameter configuration.
 See the section on Data Structure for more information.
 The archive stores additionally a \link[mlr3:BenchmarkResult]{mlr3::BenchmarkResult} (\verb{$benchmark_result}) that records the resampling experiments.
-Each experiment corresponds to to a single evaluation of a hyperparameter configuration.
+Each experiment corresponds to a single evaluation of a hyperparameter configuration.
 The table (\verb{$data}) and the benchmark result (\verb{$benchmark_result}) are linked by the \code{uhash} column.
 If the archive is passed to \code{as.data.table()}, both are joined automatically.
 }
@@ -133,16 +133,16 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{search_space}}{(\link[paradox:ParamSet]{paradox::ParamSet})\cr
-Hyperparameter search space. If \code{NULL} (default), the search space is
-constructed from the \link[paradox:to_tune]{paradox::TuneToken} of the learner's parameter set
-(learner$param_set).}
+Hyperparameter search space.
+If \code{NULL} (default), the search space is constructed from the \link[paradox:to_tune]{paradox::TuneToken} of the learner's parameter set (learner$param_set).
+When using \code{to_tune()} tokens, dependencies for hierarchical search spaces are automatically handled.}
 
 \item{\code{codomain}}{(\link[bbotk:Codomain]{bbotk::Codomain})\cr
 Specifies codomain of objective function i.e. a set of performance measures.
 Internally created from provided \link[mlr3:Measure]{mlr3::Measure}s.}
 
 \item{\code{check_values}}{(\code{logical(1)})\cr
-If \code{TRUE} (default), hyperparameter configurations are check for validity.}
+If \code{TRUE} (default), hyperparameter configurations are checked for validity.}
 
 \item{\code{internal_search_space}}{(\link[paradox:ParamSet]{paradox::ParamSet} or \code{NULL})\cr
 The internal search space.}

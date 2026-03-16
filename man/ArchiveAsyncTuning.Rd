@@ -4,7 +4,7 @@
 \alias{ArchiveAsyncTuning}
 \title{Rush Data Storage}
 \description{
-The `ArchiveAsyncTuning`` stores all evaluated hyperparameter configurations and performance scores in a \link[rush:Rush]{rush::Rush} database.
+The \code{ArchiveAsyncTuning} stores all evaluated hyperparameter configurations and performance scores in a \link[rush:Rush]{rush::Rush} database.
 }
 \details{
 The \link{ArchiveAsyncTuning} is a connector to a \link[rush:Rush]{rush::Rush} database.
@@ -116,9 +116,9 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{search_space}}{(\link[paradox:ParamSet]{paradox::ParamSet})\cr
-Hyperparameter search space. If \code{NULL} (default), the search space is
-constructed from the \link[paradox:to_tune]{paradox::TuneToken} of the learner's parameter set
-(learner$param_set).}
+Hyperparameter search space.
+If \code{NULL} (default), the search space is constructed from the \link[paradox:to_tune]{paradox::TuneToken} of the learner's parameter set (learner$param_set).
+When using \code{to_tune()} tokens, dependencies for hierarchical search spaces are automatically handled.}
 
 \item{\code{codomain}}{(\link[bbotk:Codomain]{bbotk::Codomain})\cr
 Specifies codomain of objective function i.e. a set of performance measures.
@@ -131,7 +131,7 @@ If a rush instance is supplied, the tuning runs without batches.}
 The internal search space.}
 
 \item{\code{check_values}}{(\code{logical(1)})\cr
-If \code{TRUE} (default), hyperparameter configurations are check for validity.}
+If \code{TRUE} (default), hyperparameter configurations are checked for validity.}
 }
 \if{html}{\out{</div>}}
 }

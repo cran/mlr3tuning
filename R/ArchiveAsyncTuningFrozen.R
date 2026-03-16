@@ -1,7 +1,7 @@
 #' @title Frozen Rush Data Storage
 #'
 #' @description
-#' Freezes the Redis data base of an [ArchiveAsyncTuning] to a  `data.table::data.table()`.
+#' Freezes the Redis data base of an [ArchiveAsyncTuning] to a `data.table::data.table()`.
 #' No further points can be added to the archive but the data can be accessed and analyzed.
 #' Useful when the Redis data base is not permanently available.
 #' Use the callback [mlr3tuning.async_freeze_archive] to freeze the archive after the optimization has finished.
@@ -164,6 +164,7 @@ as.data.table.ArchiveAsyncTuningFrozen = function(x, ..., unnest = "internal_tun
     setdiff(internal_tuned_values_ids, exclude_columns)
   }
 
-  setcolorder(tab, c(x$cols_x, x$cols_y, cols_y_extra, cols_internal_tuned_values, cols_x_domain, "runtime_learners", "timestamp_xs", "timestamp_ys"))
+  cns = intersect(c(x$cols_x, x$cols_y, cols_y_extra, cols_internal_tuned_values, cols_x_domain, "runtime_learners", "timestamp_xs", "timestamp_ys"), names(tab))
+  setcolorder(tab, cns)
   tab[, setdiff(names(tab), exclude_columns), with = FALSE]
 }

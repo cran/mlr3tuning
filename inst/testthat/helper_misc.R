@@ -64,16 +64,16 @@ make_dummy_cp_measure = function(type, minimize = TRUE) {
   if (type == "classif") {
     id = "dummy.cp.classif"
     inh = MeasureClassif
-    cl = "MeaureDummyCPClassif"
+    cl = "MeasureDummyCPClassif"
   } else {
     id = "dummy.cp.regr"
     inh = MeasureRegr
-    cl = "MeaureDummyCPRegr"
+    cl = "MeasureDummyCPRegr"
   }
   m = R6Class(cl,
     inherit = inh,
     public = list(
-      # allow a fun to transform cp to score, this allows further shenenigans
+      # allow a fun to transform cp to score, this allows further shenanigans
       # to disentangle cp value and score
       fun = NULL,
 
@@ -140,18 +140,3 @@ MAKE_GL = function() {
   mlr3pipelines::GraphLearner$new(g)
 }
 
-flush_redis = function() {
-  config = redux::redis_config()
-  r = redux::hiredis(config)
-  r$FLUSHDB()
-}
-
-expect_rush_reset = function(rush, type = "kill") {
-  rush$reset(type = type)
-  Sys.sleep(1)
-  keys = rush$connector$command(c("KEYS", "*"))
-  if (!test_list(keys, len = 0)) {
-    stopf("Found keys in redis after reset: %s", keys)
-  }
-  mirai::daemons(0)
-}
